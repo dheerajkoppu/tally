@@ -186,7 +186,7 @@ final class AudioTapController: @unchecked Sendable {
             if let played = lastPlayed[id], now.timeIntervalSince(played) < Self.lingerInterval { return true }
             return false
         }
-        let apps = visible.map { group in
+        let apps: [AudioApp] = visible.map { group -> AudioApp in
             let setting = settings[group.owner.id] ?? VolumeSetting()
             return AudioApp(
                 id: group.owner.id,
@@ -201,7 +201,7 @@ final class AudioTapController: @unchecked Sendable {
                 problem: failures[group.owner.id]
             )
         }
-        .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        .sorted { (lhs: AudioApp, rhs: AudioApp) in lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending }
         let deviceName = outputDeviceID.flatMap { AudioProperty.string($0, kAudioObjectPropertyName) }
         let discovery = AudioDiscovery(apps: apps, outputDeviceName: deviceName)
         onDiscovery?(discovery)
