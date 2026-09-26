@@ -1,41 +1,14 @@
 {
-  "color-space-for-untagged-svg-colors" : "display-p3",
   "fill-specializations" : [
     {
       "value" : {
-        "linear-gradient" : [
-          "display-p3:0.27000,0.27500,0.30000,1.00000",
-          "display-p3:0.07500,0.08000,0.09000,1.00000"
-        ],
-        "orientation" : {
-          "start" : {
-            "x" : 0.5,
-            "y" : 0
-          },
-          "stop" : {
-            "x" : 0.5,
-            "y" : 1
-          }
-        }
+        "automatic-gradient" : "extended-srgb:0.17255,0.17647,0.19216,1.00000"
       }
     },
     {
       "appearance" : "dark",
       "value" : {
-        "linear-gradient" : [
-          "display-p3:0.16000,0.16500,0.18000,1.00000",
-          "display-p3:0.03000,0.03000,0.03500,1.00000"
-        ],
-        "orientation" : {
-          "start" : {
-            "x" : 0.5,
-            "y" : 0
-          },
-          "stop" : {
-            "x" : 0.5,
-            "y" : 1
-          }
-        }
+        "automatic-gradient" : "extended-srgb:0.10196,0.10588,0.11765,1.00000"
       }
     }
   ],
@@ -45,47 +18,14 @@
         {
           "fill-specializations" : [
             {
-              "appearance" : "tinted",
               "value" : {
-                "solid" : "display-p3:1.00000,1.00000,1.00000,1.00000"
+                "solid" : "extended-srgb:1.00000,1.00000,1.00000,1.00000"
               }
-            }
-          ],
-          "image-name" : "badge-count.svg",
-          "name" : "badge-count"
-        },
-        {
-          "fill-specializations" : [
+            },
             {
               "appearance" : "tinted",
               "value" : {
-                "solid" : "display-p3:0.40000,0.40000,0.40000,1.00000"
-              }
-            }
-          ],
-          "image-name" : "badge.svg",
-          "name" : "badge"
-        }
-      ],
-      "name" : "Badge",
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
-      },
-      "specular" : true,
-      "translucency" : {
-        "enabled" : false,
-        "value" : 0
-      }
-    },
-    {
-      "layers" : [
-        {
-          "fill-specializations" : [
-            {
-              "appearance" : "tinted",
-              "value" : {
-                "solid" : "display-p3:1.00000,1.00000,1.00000,1.00000"
+                "solid" : "extended-srgb:1.00000,1.00000,1.00000,1.00000"
               }
             }
           ],
@@ -95,9 +35,14 @@
         {
           "fill-specializations" : [
             {
+              "value" : {
+                "automatic-gradient" : "extended-srgb:0.09804,0.62745,0.43922,1.00000"
+              }
+            },
+            {
               "appearance" : "tinted",
               "value" : {
-                "solid" : "display-p3:0.54000,0.54000,0.54000,1.00000"
+                "solid" : "extended-srgb:0.58000,0.58000,0.58000,1.00000"
               }
             }
           ],
@@ -107,8 +52,8 @@
       ],
       "name" : "Front",
       "shadow" : {
-        "kind" : "layer-color",
-        "opacity" : 0.8
+        "kind" : "neutral",
+        "opacity" : 0.7
       },
       "specular" : true,
       "translucency" : {
@@ -121,9 +66,14 @@
         {
           "fill-specializations" : [
             {
+              "value" : {
+                "automatic-gradient" : "extended-srgb:0.94902,0.71373,0.22745,1.00000"
+              }
+            },
+            {
               "appearance" : "tinted",
               "value" : {
-                "solid" : "display-p3:0.40000,0.40000,0.40000,1.00000"
+                "solid" : "extended-srgb:0.46000,0.46000,0.46000,1.00000"
               }
             }
           ],
@@ -133,8 +83,8 @@
       ],
       "name" : "Middle",
       "shadow" : {
-        "kind" : "layer-color",
-        "opacity" : 0.8
+        "kind" : "neutral",
+        "opacity" : 0.7
       },
       "specular" : true,
       "translucency" : {
@@ -147,9 +97,14 @@
         {
           "fill-specializations" : [
             {
+              "value" : {
+                "automatic-gradient" : "extended-srgb:0.89020,0.37255,0.56863,1.00000"
+              }
+            },
+            {
               "appearance" : "tinted",
               "value" : {
-                "solid" : "display-p3:0.28000,0.28000,0.28000,1.00000"
+                "solid" : "extended-srgb:0.34000,0.34000,0.34000,1.00000"
               }
             }
           ],
@@ -159,8 +114,8 @@
       ],
       "name" : "Back",
       "shadow" : {
-        "kind" : "layer-color",
-        "opacity" : 0.8
+        "kind" : "neutral",
+        "opacity" : 0.7
       },
       "specular" : true,
       "translucency" : {

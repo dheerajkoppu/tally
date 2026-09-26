@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Tally</string>
 	<key>CFBundleExecutable</key>
 	<string>Tally</string>
 	<key>CFBundleIconFile</key>
@@ -16,27 +18,25 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>Tally</string>
-	<key>CFBundleDisplayName</key>
-	<string>Tally</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.0</string>
+	<string>1.0.1</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>15.0</string>
-	<key>NSHighResolutionCapable</key>
-	<true/>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
 	<key>NSAudioCaptureUsageDescription</key>
 	<string>Tally changes the volume of each app. Nothing is recorded.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Tally shows the battery level of your AirPods, mouse and keyboard.</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 Dheeraj Koppu. MIT License.</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
 </dict>
 </plist>

@@ -2,7 +2,8 @@ import SwiftUI
 import TallyCore
 
 /// The shape and colors of the app icon (Resources/AppIcon.icon), shared by `TallyLogoMark` and scripts/make-icon.swift.
-/// Positions and sizes are in unit coordinates of the icon body (0,0 top left).
+/// Positions and sizes are in unit coordinates of the icon body (0,0 top left). Colours are sampled from the icon as
+/// the system renders it (docs/images/icon.png), so the flat mark matches the glass one.
 enum LogoGeometry {
     struct Tile {
         let center: CGPoint
@@ -14,28 +15,25 @@ enum LogoGeometry {
 
     /// Corner radius as a share of the side, drawn with continuous corners, like the macOS 26 icon mask.
     static let cornerRatio: CGFloat = 0.255
-    static let backgroundTop = Color(.displayP3, red: 0.27, green: 0.275, blue: 0.30)
-    static let backgroundBottom = Color(.displayP3, red: 0.075, green: 0.08, blue: 0.09)
+    static let backgroundTop = color(0x35363A)
+    static let backgroundBottom = color(0x2B2C31)
 
-    /// The pile of app tiles, back to front.
+    /// The pile of app tiles, back to front: GPU pink, Disk amber and Network green from the app's palette.
     static let tiles = [
-        Tile(center: CGPoint(x: 0.3877, y: 0.4297), side: 0.4756, degrees: -16,
-             top: Color(.displayP3, red: 1.00, green: 0.46, blue: 0.57), bottom: Color(.displayP3, red: 0.85, green: 0.15, blue: 0.33)),
-        Tile(center: CGPoint(x: 0.4482, y: 0.4902), side: 0.4756, degrees: -8,
-             top: Color(.displayP3, red: 1.00, green: 0.80, blue: 0.30), bottom: Color(.displayP3, red: 0.96, green: 0.54, blue: 0.04)),
-        Tile(center: CGPoint(x: 0.5254, y: 0.5674), side: 0.4980, degrees: 0,
-             top: Color(.displayP3, red: 0.28, green: 0.85, blue: 0.53), bottom: Color(.displayP3, red: 0.02, green: 0.55, blue: 0.28)),
+        Tile(center: CGPoint(x: 0.4339, y: 0.4339), side: 0.5160, degrees: -16, top: color(0xFD74A7), bottom: color(0xE35F91)),
+        Tile(center: CGPoint(x: 0.4996, y: 0.4996), side: 0.5160, degrees: -8, top: color(0xFFC244), bottom: color(0xF2B63A)),
+        Tile(center: CGPoint(x: 0.5833, y: 0.5833), side: 0.5404, degrees: 0, top: color(0x32B281), bottom: color(0x19A070)),
     ]
     static let tileCornerRatio: CGFloat = 0.25
-    /// The 2×2 grid of app cells on the front tile, as shares of the tile side.
-    static let cellRatio: CGFloat = 0.21
-    static let cellGapRatio: CGFloat = 0.068
+    /// The 2×2 grid on the front tile, in the proportions of the SF Symbol square.grid.2x2: each cell a share of the
+    /// tile side, gaps and corners a fifth of a cell.
+    static let cellRatio: CGFloat = 0.228
+    static let cellGapRatio: CGFloat = 0.195
+    static let cellCornerRatio: CGFloat = 0.2
 
-    static let badgeCenter = CGPoint(x: 0.7588, y: 0.3340)
-    static let badgeRadius: CGFloat = 0.1182
-    static let badgeCount = "5"
-    static let badgeTop = Color(.displayP3, red: 1.00, green: 0.45, blue: 0.39)
-    static let badgeBottom = Color(.displayP3, red: 0.85, green: 0.12, blue: 0.07)
+    private static func color(_ hex: UInt32) -> Color {
+        Color(.sRGB, red: Double((hex >> 16) & 0xFF) / 255, green: Double((hex >> 8) & 0xFF) / 255, blue: Double(hex & 0xFF) / 255)
+    }
 }
 
 /// The menu bar glyph: three offset rounded squares, the front one cut with a 2×2 grid of app cells.
@@ -68,7 +66,7 @@ public struct TallyStackShape: Shape {
     }
 }
 
-/// The Tally app icon: a graphite squircle with a pile of app tiles and a count badge, drawn in one pass.
+/// The Tally app icon: a graphite squircle with a pile of three app tiles, drawn in one pass.
 public struct TallyLogoMark: View {
     private let size: CGFloat
 
@@ -106,23 +104,22 @@ public struct TallyLogoMark: View {
             let tileSide = tile.side * side
             let frame = CGRect(x: -tileSide / 2, y: -tileSide / 2, width: tileSide, height: tileSide)
             let shape = RoundedRectangle(cornerRadius: tileSide * LogoGeometry.tileCornerRatio, style: .continuous).path(in: frame)
-            // An offset shade in the tile's own colour stands in for the icon's layer-colour shadow.
-            tileContext.fill(shape.offsetBy(dx: 0, dy: tileSide * 0.04), with: .color(.black.opacity(0.35)))
-            tileContext.fill(shape.offsetBy(dx: 0, dy: tileSide * 0.02), with: .color(tile.bottom.opacity(0.6)))
+            // An offset shade stands in for the icon's glass shadow, without a blur.
+            tileContext.fill(shape.offsetBy(dx: tileSide * 0.012, dy: tileSide * 0.03), with: .color(.black.opacity(0.32)))
             tileContext.fill(shape, with: .linearGradient(
                 Gradient(colors: [tile.top, tile.bottom]),
-                startPoint: CGPoint(x: frame.minX + tileSide * 0.2, y: frame.minY),
-                endPoint: CGPoint(x: frame.minX + tileSide * 0.55, y: frame.maxY)
+                startPoint: CGPoint(x: 0, y: frame.minY),
+                endPoint: CGPoint(x: 0, y: frame.maxY)
             ))
             tileContext.stroke(shape, with: .linearGradient(
-                Gradient(colors: [.white.opacity(0.6), .white.opacity(0)]),
+                Gradient(colors: [.white.opacity(0.55), .white.opacity(0)]),
                 startPoint: CGPoint(x: 0, y: frame.minY),
                 endPoint: CGPoint(x: 0, y: frame.midY)
-            ), lineWidth: max(tileSide * 0.012, 0.5))
+            ), lineWidth: max(tileSide * 0.01, 0.5))
 
             if index == LogoGeometry.tiles.count - 1 {
                 let cell = tileSide * LogoGeometry.cellRatio
-                let pitch = cell + tileSide * LogoGeometry.cellGapRatio
+                let pitch = cell * (1 + LogoGeometry.cellGapRatio)
                 for row in 0..<2 {
                     for column in 0..<2 {
                         let cellFrame = CGRect(
@@ -131,26 +128,11 @@ public struct TallyLogoMark: View {
                             width: cell,
                             height: cell
                         )
-                        tileContext.fill(RoundedRectangle(cornerRadius: cell * 0.28, style: .continuous).path(in: cellFrame), with: .color(.white))
+                        let cellShape = RoundedRectangle(cornerRadius: cell * LogoGeometry.cellCornerRatio, style: .continuous).path(in: cellFrame)
+                        tileContext.fill(cellShape, with: .color(.white))
                     }
                 }
             }
         }
-
-        let center = CGPoint(x: LogoGeometry.badgeCenter.x * side, y: LogoGeometry.badgeCenter.y * side)
-        let radius = LogoGeometry.badgeRadius * side
-        let badge = Circle().path(in: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2))
-        context.fill(badge.offsetBy(dx: 0, dy: radius * 0.14), with: .color(.black.opacity(0.3)))
-        context.fill(badge, with: .linearGradient(
-            Gradient(colors: [LogoGeometry.badgeTop, LogoGeometry.badgeBottom]),
-            startPoint: CGPoint(x: 0, y: center.y - radius),
-            endPoint: CGPoint(x: 0, y: center.y + radius)
-        ))
-        context.draw(
-            Text(LogoGeometry.badgeCount)
-                .font(.system(size: radius * 1.3, weight: .bold, design: .rounded))
-                .foregroundStyle(.white),
-            at: center
-        )
     }
 }
