@@ -1,0 +1,23 @@
+name: Feature request
+description: An idea for something Tally could do.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: Describe what you're trying to find out or get done, not just the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could Tally help?
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Tally's principles
+      description: Tally stays light on CPU, stays offline, and asks before acting. See CONTRIBUTING.md.
+      options:
+        - label: This idea fits those principles, or I've explained why it's worth an exception.
+          required: true

@@ -1,0 +1,38 @@
+name: Bug report
+description: Something in Tally isn't working or shows the wrong figure.
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what Tally did instead. Screenshots help a lot.
+    validations:
+      required: true
+  - type: input
+    id: tally-version
+    attributes:
+      label: Tally version
+      description: Settings › About
+      placeholder: "1.0.0 (1)"
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+      placeholder: "macOS 27.0"
+    validations:
+      required: true
+  - type: input
+    id: mac-model
+    attributes:
+      label: Mac model
+      placeholder: "MacBook Pro, M4 Pro"
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Other monitoring apps you run, a VPN, external displays, or anything else that might matter.
