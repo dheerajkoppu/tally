@@ -17,7 +17,7 @@ body:
     id: principles
     attributes:
       label: Tally's principles
-      description: Tally stays light on CPU, stays offline, and asks before acting. See CONTRIBUTING.md.
+      description: Tally stays light on CPU, never phones home on its own, and asks before acting. See CONTRIBUTING.md.
       options:
         - label: This idea fits those principles, or I've explained why it's worth an exception.
           required: true

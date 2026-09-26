@@ -65,7 +65,7 @@ A system monitor shouldn't show up in its own list of busy apps. Tally refreshes
 
 ## Privacy
 
-Tally makes no network connections of its own. There's no account, no analytics and no update server. Your apps, history and project names stay on your Mac. The code is all here, so you can check.
+Tally only goes online when you choose **Check for Updates**, which asks GitHub for the latest version number. There's no account, no analytics and no background connections. Your apps, history and project names stay on your Mac. The code is all here, so you can check.
 
 It asks for these permissions, and only when you use the feature that needs them:
 
@@ -75,6 +75,10 @@ It asks for these permissions, and only when you use the feature that needs them
 | Bluetooth                       | Charge levels of wireless accessories                     |
 | Screen & System Audio Recording | Per-app volume. Audio passes straight through and is never saved. |
 | Administrator password          | Only if you install the optional fan-control helper               |
+
+## Updating
+
+Choose **Tally › Check for Updates…** (it's also in Settings › About). If there's a new version, Tally takes you to the download. Replace the copy in Applications and your history and settings stay. Tally never checks on its own.
 
 ## Build from source
 

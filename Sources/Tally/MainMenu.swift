@@ -1,5 +1,6 @@
 import AppKit
 import TallyCore
+import TallyExtras
 
 @MainActor
 enum MainMenu {
@@ -9,6 +10,8 @@ enum MainMenu {
 
         let appMenu = NSMenu(title: "Tally")
         appMenu.addItem(withTitle: "About Tally", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        let updates = appMenu.addItem(withTitle: "Check for Updates…", action: #selector(MenuActions.checkForUpdates(_:)), keyEquivalent: "")
+        updates.target = actions
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Settings…", action: #selector(AppDelegate.showSettingsWindow(_:)), keyEquivalent: ",")
         appMenu.addItem(.separator())
@@ -94,6 +97,10 @@ final class MenuActions: NSObject {
 
     @objc func openHelp(_ sender: Any?) {
         NSWorkspace.shared.open(Self.helpURL)
+    }
+
+    @objc func checkForUpdates(_ sender: Any?) {
+        UpdateChecker.checkForUpdates()
     }
 
     @objc func showVolumeMixer(_ sender: Any?) {

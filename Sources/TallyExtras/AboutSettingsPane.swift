@@ -28,7 +28,7 @@ public struct AboutSettingsPane: View {
             }
 
             Section {
-                PrivacyRow(symbol: "network.slash", title: "Never Goes Online", text: "Tally makes no network connections of its own.")
+                PrivacyRow(symbol: "network", title: "Online Only When You Ask", text: "Tally connects to GitHub only when you choose Check for Updates.")
                 PrivacyRow(symbol: "desktopcomputer", title: "Stays on Your Mac", text: "Your apps, history and project names never leave it.")
                 PrivacyRow(symbol: "chevron.left.forwardslash.chevron.right", title: "Open Source", text: "Anyone can read the code and check.")
             } header: {
@@ -40,6 +40,11 @@ public struct AboutSettingsPane: View {
                     Link("github.com/dheerajkoppu/tally", destination: Self.website)
                 }
                 LabeledContent("License", value: "MIT")
+                LabeledContent("Updates") {
+                    Button("Check for Updates…") {
+                        UpdateChecker.checkForUpdates()
+                    }
+                }
             }
         }
         .settingsPaneLayout()
