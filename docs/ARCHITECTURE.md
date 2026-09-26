@@ -58,7 +58,7 @@ swift build --product Tally
 .build/debug/Tally --render overview,cpu,memory --out /tmp/tally-render --wait 6 --scheme both
 ```
 
-Screen names: `overview cpu memory disk network gpu battery projects popover settings welcome export mixer inspector`.
+Screen names: `overview cpu memory disk network gpu battery projects popover settings welcome export mixer inspector`. Add `--width 620` to render at another width, as the website screenshots are.
 
 `ImageRenderer` can't draw `ScrollView` contents, AppKit views or popovers, so top-level views stay free of `ScrollView` (the shell adds scrolling) and have a natural height.
 

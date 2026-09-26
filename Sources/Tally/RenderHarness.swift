@@ -8,7 +8,7 @@ import TallyMenuBar
 import TallyExtras
 
 /// Renders views to PNG with live data, for checking the UI without a screen:
-///   Tally --render overview,cpu,popover --out /tmp/shots [--wait 6] [--scheme light|dark|both]
+///   Tally --render overview,cpu,popover --out /tmp/shots [--wait 6] [--scheme light|dark|both] [--width 640]
 @MainActor
 enum RenderHarness {
     static let names = ["overview", "cpu", "memory", "disk", "network", "gpu", "battery", "projects", "popover", "settings", "welcome", "export", "mixer", "inspector"]
@@ -26,6 +26,7 @@ enum RenderHarness {
         let wait = Double(value(after: "--wait") ?? "6") ?? 6
         let schemeArgument = value(after: "--scheme") ?? "light"
         let schemes: [ColorScheme] = schemeArgument == "both" ? [.light, .dark] : (schemeArgument == "dark" ? [.dark] : [.light])
+        let requestedWidth = value(after: "--width").flatMap(Double.init).map { CGFloat($0) }
 
         try? FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
         engine.beginFastSampling("render")
@@ -34,14 +35,14 @@ enum RenderHarness {
                 for scheme in schemes {
                     let suffix = schemes.count > 1 ? "-\(scheme == .dark ? "dark" : "light")" : ""
                     let file = output.appendingPathComponent("\(name)\(suffix).png")
-                    render(name, scheme: scheme, to: file)
+                    render(name, scheme: scheme, requestedWidth: requestedWidth, to: file)
                 }
             }
             exit(0)
         }
     }
 
-    private static func render(_ name: String, scheme: ColorScheme, to file: URL) {
+    private static func render(_ name: String, scheme: ColorScheme, requestedWidth: CGFloat?, to file: URL) {
         let content: AnyView
         var width: CGFloat = 1080
         switch name {
@@ -72,6 +73,9 @@ enum RenderHarness {
                 return
             }
             content = AnyView(MetricTabView(tab: tab))
+        }
+        if let requestedWidth {
+            width = requestedWidth
         }
 
         let appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)

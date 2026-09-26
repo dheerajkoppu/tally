@@ -6,30 +6,30 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Tally: a free, open-source system monitor for Mac</title>
+    <title>Tally: see which apps are really using your Mac</title>
     <meta
       name="description"
-      content="Tally adds every helper process to the app it works for, so you see apps instead of thousands of processes. A month of history, runaway-app alerts, local servers by project, and a menu bar monitor. Free and open source."
+      content="Tally is a free, open-source system monitor for Mac. It counts every helper process toward the app it belongs to, so you see apps instead of thousands of processes."
     />
     <meta name="color-scheme" content="light dark" />
     <meta
       name="theme-color"
-      content="#f6f5ef"
+      content="#ffffff"
       media="(prefers-color-scheme: light)"
     />
     <meta
       name="theme-color"
-      content="#0c1311"
+      content="#0f1012"
       media="(prefers-color-scheme: dark)"
     />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
-      content="Tally: a free, open-source system monitor for Mac"
+      content="Tally: see which apps are really using your Mac"
     />
     <meta
       property="og:description"
-      content="Every app on your Mac, counted. Free, open source, and it never goes online."
+      content="A free, open-source system monitor for Mac that shows apps instead of processes. It never goes online."
     />
     <meta property="og:url" content="https://dheerajkoppu.github.io/tally/" />
     <meta
@@ -39,49 +39,53 @@
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="apple-touch-icon" href="assets/icon-256.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        --background: #f6f5ef;
-        --surface: #ffffff;
-        --surface-sunken: #efeee6;
-        --ink: #13201b;
-        --ink-secondary: #4b5b54;
-        --ink-tertiary: #7a8a83;
-        --line: rgba(19, 32, 27, 0.1);
-        --brand: #1d8a66;
-        --brand-strong: #0f6b4f;
-        --brand-soft: rgba(29, 138, 102, 0.1);
-        --amber: #f0b54a;
-        --button-ink: #ffffff;
+        --background: #ffffff;
+        --hero-background: #f5f7fa;
+        --foreground: #171717;
+        --muted: #525252;
+        --subtle: #737373;
+        --line: #e5e7eb;
+        --primary: #13865e;
+        --primary-hover: #0f7351;
+        --highlight: #19a070;
+        --button-dark: #171717;
+        --button-dark-hover: #2a2a2a;
+        --frame: #ffffff;
+        --frame-bar: #f3f4f6;
+        --grid-line: #80808014;
         --shadow:
-          0 1px 2px rgba(19, 32, 27, 0.06),
-          0 12px 40px -12px rgba(19, 32, 27, 0.18);
-        --window-bar: #e9e8e1;
-        --code-background: #13201b;
-        --code-ink: #e7efe9;
-        --radius: 18px;
-        --content: 1120px;
+          0 1px 2px rgba(17, 24, 39, 0.05),
+          0 24px 48px -16px rgba(17, 24, 39, 0.18);
+        --fade: rgba(233, 240, 236, 0.55);
       }
       @media (prefers-color-scheme: dark) {
         :root {
           color-scheme: dark;
-          --background: #0c1311;
-          --surface: #141d1a;
-          --surface-sunken: #101815;
-          --ink: #eaf1ed;
-          --ink-secondary: #a3b3ab;
-          --ink-tertiary: #72827b;
-          --line: rgba(234, 241, 237, 0.1);
-          --brand: #3cc493;
-          --brand-strong: #5ad6a7;
-          --brand-soft: rgba(60, 196, 147, 0.12);
-          --amber: #ffd27a;
-          --button-ink: #06231a;
+          --background: #0f1012;
+          --hero-background: #151619;
+          --foreground: #ededed;
+          --muted: #a3a3a3;
+          --subtle: #8a8a8a;
+          --line: #26272b;
+          --primary: #15925f;
+          --primary-hover: #19a570;
+          --highlight: #34c790;
+          --button-dark: #ededed;
+          --button-dark-hover: #ffffff;
+          --frame: #1b1c1f;
+          --frame-bar: #232428;
+          --grid-line: #ffffff0d;
           --shadow:
-            0 1px 2px rgba(0, 0, 0, 0.4), 0 20px 50px -20px rgba(0, 0, 0, 0.7);
-          --window-bar: #1c2622;
-          --code-background: #060b09;
-          --code-ink: #d8e6de;
+            0 1px 2px rgba(0, 0, 0, 0.5), 0 24px 60px -20px rgba(0, 0, 0, 0.8);
+          --fade: rgba(15, 16, 18, 0.6);
         }
       }
       * {
@@ -99,451 +103,480 @@
       body {
         margin: 0;
         background: var(--background);
-        color: var(--ink);
+        color: var(--foreground);
         font:
-          17px/1.55 -apple-system,
+          18px/1.6 "Poppins",
+          -apple-system,
           BlinkMacSystemFont,
-          "SF Pro Text",
-          "Inter",
           "Segoe UI",
           system-ui,
           sans-serif;
         -webkit-font-smoothing: antialiased;
-        padding: env(safe-area-inset-top, 0px)
-          max(20px, env(safe-area-inset-right, 0px))
-          env(safe-area-inset-bottom, 0px)
-          max(20px, env(safe-area-inset-left, 0px));
+        text-wrap: pretty;
       }
       img {
+        display: block;
         max-width: 100%;
         height: auto;
-        display: block;
       }
       a {
-        color: var(--brand-strong);
+        color: inherit;
         text-underline-offset: 3px;
       }
-      .wrap {
-        max-width: var(--content);
-        margin: 0 auto;
-      }
-      .eyebrow {
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--brand-strong);
-        margin: 0 0 12px;
-      }
-      h1, h2, h3 {
-        text-wrap: balance;
-        font-family:
-          -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter",
-          "Segoe UI", system-ui, sans-serif;
-        margin: 0;
-      }
-      h2 {
-        font-size: clamp(30px, 4.4vw, 44px);
-        line-height: 1.1;
-        letter-spacing: -0.025em;
-        font-weight: 700;
-      }
+      h1,
+      h2,
       h3 {
-        font-size: 18px;
-        line-height: 1.3;
-        font-weight: 650;
-        letter-spacing: -0.01em;
+        margin: 0;
+        font-weight: 700;
+        text-wrap: balance;
       }
       p {
         margin: 0;
       }
-      .lead {
-        font-size: clamp(18px, 2vw, 20px);
-        color: var(--ink-secondary);
-        max-width: 40em;
+      .container {
+        max-width: 1152px;
+        margin: 0 auto;
+        padding-inline: max(20px, env(safe-area-inset-left, 0px));
       }
-      section { padding-block: clamp(56px, 8vw, 96px); }
+      section[id] {
+        scroll-margin-top: 88px;
+      }
 
-      .nav {
+      .header {
+        position: fixed;
+        inset: 0 0 auto 0;
+        z-index: 50;
+        padding-top: env(safe-area-inset-top, 0px);
+        backdrop-filter: saturate(180%) blur(14px);
+        -webkit-backdrop-filter: saturate(180%) blur(14px);
+        background: color-mix(in srgb, var(--background) 72%, transparent);
+      }
+      .header nav {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding-block: 18px;
+        height: 72px;
       }
-      .brand {
+      .logo {
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        color: var(--ink);
         text-decoration: none;
+        font-size: 24px;
         font-weight: 700;
-        font-size: 19px;
         letter-spacing: -0.01em;
       }
-      .brand img {
-        width: 34px;
-        height: 34px;
+      .logo img {
+        width: 38px;
+        height: 38px;
       }
-      .nav-links {
+      .menu {
         display: flex;
         align-items: center;
-        gap: 22px;
-        font-size: 15px;
+        gap: 28px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
       }
-      .nav-links a {
-        color: var(--ink-secondary);
+      .menu a {
         text-decoration: none;
+        transition: color 0.15s ease;
       }
-      .nav-links a:hover {
-        color: var(--ink);
+      .menu .text-link a:hover {
+        color: var(--highlight);
       }
-      @media (max-width: 640px) {
-        .nav-links .optional {
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 999px;
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+        transition:
+          background-color 0.15s ease,
+          transform 0.1s ease;
+      }
+      .pill:active {
+        transform: scale(0.96);
+      }
+      .pill-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .pill-primary:hover {
+        background: var(--primary-hover);
+      }
+      .pill-dark {
+        background: var(--button-dark);
+        color: var(--background);
+      }
+      .pill-dark:hover {
+        background: var(--button-dark-hover);
+      }
+      @media (max-width: 860px) {
+        .menu .text-link {
+          display: none;
+        }
+        .menu {
+          gap: 10px;
+        }
+      }
+      @media (max-width: 420px) {
+        .menu .github-link {
           display: none;
         }
       }
 
-      .button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        min-height: 48px;
-        padding: 12px 22px;
-        border-radius: 999px;
-        font-size: 16px;
-        font-weight: 600;
-        text-decoration: none;
-        white-space: nowrap;
-        transition:
-          transform 0.15s ease,
-          background-color 0.15s ease;
-      }
-      .button:active {
-        transform: scale(0.98);
-      }
-      .button-primary {
-        background: var(--brand);
-        color: var(--button-ink);
-      }
-      .button-primary:hover {
-        background: var(--brand-strong);
-      }
-      .button-secondary {
-        background: var(--surface);
-        color: var(--ink);
-        box-shadow: inset 0 0 0 1px var(--line);
-      }
-      .button-secondary:hover {
-        background: var(--surface-sunken);
-      }
-      .button svg {
-        width: 18px;
-        height: 18px;
-        flex: none;
-      }
-      .button-small {
-        min-height: 38px;
-        padding: 8px 16px;
-        font-size: 14px;
-      }
-
       .hero {
-        padding-block: clamp(40px, 8vw, 88px) 0;
+        position: relative;
+        padding-top: 168px;
         text-align: center;
+        overflow: hidden;
       }
-      .hero-icon {
-        width: 104px;
-        height: 104px;
-        margin: 0 auto 28px;
-        filter: drop-shadow(0 14px 24px rgba(19, 32, 27, 0.3));
+      .hero-grid {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background-color: var(--hero-background);
+        background-image:
+          linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+        background-size: 40px 40px;
+        -webkit-mask-image: radial-gradient(
+          ellipse 55% 50% at 50% 38%,
+          #000 60%,
+          transparent 100%
+        );
+        mask-image: radial-gradient(
+          ellipse 55% 50% at 50% 38%,
+          #000 60%,
+          transparent 100%
+        );
       }
       .hero h1 {
-        font-size: clamp(42px, 7.4vw, 80px);
-        line-height: 1.02;
-        letter-spacing: -0.035em;
-        font-weight: 750;
-        max-width: 12em;
+        font-size: clamp(38px, 6vw, 62px);
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+        max-width: 13em;
         margin: 0 auto;
       }
-      .hero h1 .counted {
-        color: var(--brand);
+      .hero h1 span {
+        color: var(--highlight);
       }
-      .hero .lead {
-        margin: 24px auto 0;
+      .hero .subheading {
+        max-width: 34em;
+        margin: 20px auto 0;
       }
-      .hero-actions {
+      .store-buttons {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
+        gap: 16px;
+        margin-top: 32px;
+      }
+      .store-button {
+        display: inline-flex;
+        align-items: center;
         gap: 12px;
-        margin-top: 34px;
+        min-width: 212px;
+        padding: 10px 26px 10px 22px;
+        border-radius: 999px;
+        text-decoration: none;
+        text-align: left;
+        transition:
+          background-color 0.15s ease,
+          transform 0.1s ease;
       }
-      .hero-meta {
-        margin-top: 18px;
+      .store-button:active {
+        transform: scale(0.97);
+      }
+      .store-button svg {
+        width: 26px;
+        height: 26px;
+        flex: none;
+      }
+      .store-button small {
+        display: block;
+        font-size: 11px;
+        line-height: 1.3;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      .store-button strong {
+        display: block;
+        font-size: 19px;
+        line-height: 1.25;
+        font-weight: 600;
+      }
+      .store-button.primary {
+        background: var(--primary);
+        color: #fff;
+        box-shadow: 0 10px 24px -10px
+          color-mix(in srgb, var(--primary) 70%, transparent);
+      }
+      .store-button.primary:hover {
+        background: var(--primary-hover);
+      }
+      .store-button.dark {
+        background: var(--button-dark);
+        color: var(--background);
+      }
+      .store-button.dark:hover {
+        background: var(--button-dark-hover);
+      }
+      .hero-note {
+        margin-top: 16px;
         font-size: 14px;
-        color: var(--ink-tertiary);
+        color: var(--subtle);
       }
-      .hero-meta span + span::before {
-        content: "·";
-        margin: 0 8px;
-      }
-
-      .window {
-        margin: clamp(48px, 7vw, 72px) auto 0;
+      .hero-shot {
+        position: relative;
+        margin: 64px auto 0;
         max-width: 1040px;
-        background: var(--surface);
-        border-radius: 16px;
+      }
+      .hero-shot::after {
+        content: "";
+        position: absolute;
+        left: -40px;
+        right: -40px;
+        bottom: 0;
+        height: 45%;
+        background: linear-gradient(
+          to bottom,
+          transparent,
+          var(--fade) 45%,
+          var(--background)
+        );
+        pointer-events: none;
+      }
+      .frame {
+        background: var(--frame);
+        border-radius: 14px;
+        overflow: hidden;
         box-shadow:
           var(--shadow),
-          inset 0 0 0 1px var(--line);
-        overflow: hidden;
+          0 0 0 1px var(--line);
       }
-      .window-bar {
+      .frame-bar {
         display: flex;
         gap: 8px;
-        padding: 14px 16px;
-        background: var(--window-bar);
+        padding: 13px 16px;
+        background: var(--frame-bar);
         border-bottom: 1px solid var(--line);
       }
-      .window-bar span {
+      .frame-bar span {
         width: 12px;
         height: 12px;
         border-radius: 50%;
         background: #ff5f57;
       }
-      .window-bar span:nth-child(2) {
+      .frame-bar span:nth-child(2) {
         background: #febc2e;
       }
-      .window-bar span:nth-child(3) {
+      .frame-bar span:nth-child(3) {
         background: #28c840;
       }
-      .window picture img {
+      .frame picture,
+      .frame img {
         width: 100%;
       }
 
-      .count-strip {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
-        gap: 1px;
-        background: var(--line);
-        border-radius: var(--radius);
-        overflow: hidden;
-        margin-top: 48px;
-        box-shadow: inset 0 0 0 1px var(--line);
-      }
-      .count-strip div {
-        background: var(--surface);
-        padding: 26px 28px;
-      }
-      .count-strip strong {
-        display: block;
-        font-size: 38px;
-        line-height: 1;
-        letter-spacing: -0.03em;
-        font-variant-numeric: tabular-nums;
-      }
-      .count-strip span {
-        display: block;
-        margin-top: 8px;
-        color: var(--ink-secondary);
-        font-size: 15px;
-      }
-      .count-strip .highlight strong {
-        color: var(--brand);
-      }
-
-      .free {
+      .facts {
+        padding: 8px 0 24px;
         text-align: center;
       }
-      .free h2 {
-        max-width: 14em;
-        margin: 0 auto;
+      .facts p {
+        color: var(--muted);
+        font-size: 16px;
       }
-      .free .lead {
-        margin: 20px auto 0;
-      }
-      .free-list {
+      .facts ul {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 10px;
-        margin-top: 32px;
-        padding: 0;
+        gap: 12px 40px;
         list-style: none;
+        margin: 20px 0 0;
+        padding: 0;
       }
-      .free-list li {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 9px 16px;
-        border-radius: 999px;
-        background: var(--surface);
-        box-shadow: inset 0 0 0 1px var(--line);
-        font-size: 15px;
-        font-weight: 550;
+      .facts li {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
       }
-      .free-list svg {
-        width: 16px;
-        height: 16px;
-        color: var(--brand);
+      .facts strong {
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
       }
-
-      .section-head {
-        max-width: 40em;
-        margin-bottom: 44px;
-      }
-      .section-head .lead {
-        margin-top: 16px;
-      }
-      .features {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr));
-        gap: 16px;
-      }
-      .feature {
-        background: var(--surface);
-        border-radius: var(--radius);
-        padding: 26px;
-        box-shadow: inset 0 0 0 1px var(--line);
-      }
-      .feature-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 11px;
-        display: grid;
-        place-items: center;
-        background: var(--brand-soft);
-        color: var(--brand-strong);
-        margin-bottom: 18px;
-      }
-      .feature-icon svg {
-        width: 22px;
-        height: 22px;
-      }
-      .feature p {
-        margin-top: 8px;
-        color: var(--ink-secondary);
+      .facts span {
+        color: var(--muted);
         font-size: 16px;
       }
 
-      .split {
+      .benefit {
+        padding-block: clamp(64px, 9vw, 112px);
+      }
+      .benefit-grid {
         display: grid;
-        grid-template-columns: 1.05fr 0.95fr;
-        gap: clamp(32px, 6vw, 80px);
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(40px, 7vw, 96px);
         align-items: center;
       }
-      .split .lead {
-        margin-top: 16px;
+      .benefit.flip .benefit-media {
+        order: 2;
       }
-      .split-image {
-        justify-self: center;
-        width: min(380px, 100%);
+      .benefit h2 {
+        font-size: clamp(32px, 4.2vw, 46px);
+        line-height: 1.15;
+        letter-spacing: -0.015em;
+      }
+      .benefit .lead {
+        margin-top: 14px;
+        color: var(--muted);
+        max-width: 30em;
+      }
+      .bullets {
+        list-style: none;
+        margin: 32px 0 0;
+        padding: 0;
+        display: grid;
+        gap: 26px;
+      }
+      .bullets li {
+        display: flex;
+        gap: 16px;
+      }
+      .bullets svg {
+        flex: none;
+        width: 26px;
+        height: 26px;
+        margin-top: 2px;
+        color: var(--foreground);
+      }
+      .bullets h3 {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+      .bullets p {
+        margin-top: 2px;
+        font-size: 16px;
+        color: var(--muted);
+      }
+      .benefit-media .frame { max-width: 520px; margin-inline: auto; }
+      .benefit-media .frame.narrow {
+        max-width: 380px;
         border-radius: 20px;
-        box-shadow:
-          var(--shadow),
-          inset 0 0 0 1px var(--line);
-        overflow: hidden;
-        background: var(--surface);
       }
-      @media (max-width: 820px) {
-        .split {
+      @media (max-width: 860px) {
+        .benefit-grid {
           grid-template-columns: 1fr;
         }
-      }
-      .checks {
-        list-style: none;
-        padding: 0;
-        margin: 26px 0 0;
-        display: grid;
-        gap: 12px;
-      }
-      .checks li {
-        display: flex;
-        gap: 12px;
-        color: var(--ink-secondary);
-      }
-      .checks svg {
-        flex: none;
-        width: 20px;
-        height: 20px;
-        margin-top: 3px;
-        color: var(--brand);
-      }
-      .checks strong {
-        color: var(--ink);
-        font-weight: 600;
+        .benefit.flip .benefit-media {
+          order: 0;
+        }
       }
 
-      .panel {
-        background: var(--surface);
-        border-radius: 24px;
-        padding: clamp(28px, 5vw, 56px);
-        box-shadow: inset 0 0 0 1px var(--line);
+      .extras {
+        padding-block: clamp(56px, 8vw, 96px);
+        border-top: 1px solid var(--line);
       }
-      .privacy-grid {
+      .extras h2,
+      .privacy h2,
+      .faq-intro h2,
+      .cta h2 {
+        font-size: clamp(30px, 4vw, 42px);
+        line-height: 1.15;
+        letter-spacing: -0.015em;
+      }
+      .extras .bullets {
+        grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+        gap: 30px 48px;
+        margin-top: 40px;
+      }
+
+      .privacy {
+        padding-block: clamp(64px, 9vw, 112px);
+        background: var(--hero-background);
+        text-align: center;
+      }
+      .privacy .lead {
+        margin: 14px auto 0;
+        max-width: 32em;
+        color: var(--muted);
+      }
+      .privacy .bullets {
+        grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+        gap: 32px;
+        margin-top: 48px;
+        text-align: left;
+      }
+
+      .faq {
+        padding-block: clamp(64px, 9vw, 112px);
+      }
+      .faq-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
-        gap: 28px;
-        margin-top: 36px;
+        grid-template-columns: 0.8fr 1.2fr;
+        gap: 48px;
       }
-      .privacy-grid h3 {
+      .faq-intro .label {
+        font-size: 14px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .faq-intro h2 {
+        margin-top: 12px;
+      }
+      .faq-intro h2 + p { margin-top: 16px; color: var(--muted); }
+      .faq-intro a {
+        color: var(--highlight);
+      }
+      .faq-list {
+        border-top: 1px solid var(--line);
+      }
+      details {
+        border-bottom: 1px solid var(--line);
+      }
+      summary {
         display: flex;
         align-items: center;
-        gap: 10px;
-      }
-      .privacy-grid svg {
-        width: 22px;
-        height: 22px;
-        color: var(--brand);
-        flex: none;
-      }
-      .privacy-grid p {
-        margin-top: 8px;
-        color: var(--ink-secondary);
-        font-size: 16px;
-      }
-
-      .steps {
-        counter-reset: step;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 22px 4px;
+        font-size: 19px;
+        font-weight: 600;
+        cursor: pointer;
         list-style: none;
-        padding: 0;
-        margin: 36px 0 0;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
-        gap: 16px;
       }
-      .steps li {
-        counter-increment: step;
-        background: var(--surface);
-        border-radius: var(--radius);
-        padding: 24px;
-        box-shadow: inset 0 0 0 1px var(--line);
+      summary::-webkit-details-marker {
+        display: none;
       }
-      .steps li::before {
-        content: counter(step);
-        display: grid;
-        place-items: center;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: var(--brand);
-        color: var(--button-ink);
-        font-weight: 700;
-        font-size: 15px;
-        margin-bottom: 14px;
+      summary::after {
+        content: "+";
+        flex: none;
+        font-size: 26px;
+        font-weight: 400;
+        line-height: 1;
+        color: var(--highlight);
+        transition: transform 0.2s ease;
       }
-      .steps p {
-        margin-top: 6px;
-        color: var(--ink-secondary);
-        font-size: 16px;
+      details[open] summary::after {
+        transform: rotate(45deg);
       }
-      .note {
-        margin-top: 24px;
-        color: var(--ink-secondary);
-        font-size: 15px;
-        max-width: 46em;
+      details .answer {
+        padding: 0 4px 24px;
+        color: var(--muted);
+      }
+      details .answer p + p {
+        margin-top: 12px;
       }
       .code {
         display: flex;
@@ -551,17 +584,15 @@
         justify-content: space-between;
         gap: 12px;
         margin-top: 14px;
-        max-width: 640px;
-        background: var(--code-background);
-        color: var(--code-ink);
+        background: #171717;
+        color: #e5e5e5;
         border-radius: 12px;
-        padding: 12px 12px 12px 18px;
+        padding: 10px 10px 10px 16px;
       }
       .code code {
         font:
           14px/1.5 ui-monospace,
           "SF Mono",
-          SFMono-Regular,
           Menlo,
           monospace;
         overflow-x: auto;
@@ -572,698 +603,1060 @@
         border: 0;
         border-radius: 8px;
         padding: 7px 12px;
-        font: 600 13px/1 inherit;
+        font:
+          600 13px/1 "Poppins",
+          system-ui,
+          sans-serif;
         cursor: pointer;
-        background: rgba(255, 255, 255, 0.12);
-        color: var(--code-ink);
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
       }
       .copy:hover {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.22);
       }
-      .requirements {
-        margin-top: 20px;
-        font-size: 15px;
-        color: var(--ink-tertiary);
+      @media (max-width: 860px) {
+        .faq-grid {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
       }
 
-      .open-source {
+      .cta {
+        padding-block: 0 clamp(64px, 9vw, 112px);
+      }
+      .cta-panel {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        padding: clamp(40px, 7vw, 80px) 24px;
         text-align: center;
+        background: #121714;
+        color: #f5f5f5;
       }
-      .open-source .lead {
-        margin: 18px auto 0;
+      .cta-panel::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.5;
+        background-image:
+          linear-gradient(to right, #ffffff10 1px, transparent 1px),
+          linear-gradient(to bottom, #ffffff10 1px, transparent 1px);
+        background-size: 40px 40px;
+        -webkit-mask-image: radial-gradient(
+          ellipse 60% 70% at 50% 50%,
+          #000 40%,
+          transparent 100%
+        );
+        mask-image: radial-gradient(
+          ellipse 60% 70% at 50% 50%,
+          #000 40%,
+          transparent 100%
+        );
       }
-      .open-source .hero-actions {
-        margin-top: 30px;
+      .cta-panel > * {
+        position: relative;
+      }
+      .cta-panel > img {
+        width: 88px;
+        height: 88px;
+        margin: 0 auto 24px;
+      }
+      .cta-panel > p {
+        margin: 14px auto 0;
+        max-width: 30em;
+        color: #b5bdb8;
+      }
+      .cta-panel .store-button.dark {
+        background: #f5f5f5;
+        color: #121714;
+      }
+      .cta-panel .store-button.dark:hover {
+        background: #ffffff;
+      }
+      .cta-panel .hero-note {
+        color: #8f9893;
       }
 
       footer {
         border-top: 1px solid var(--line);
-        padding-block: 32px 48px;
-        color: var(--ink-tertiary);
-        font-size: 14px;
+        padding-block: 48px calc(48px + env(safe-area-inset-bottom, 0px));
+        font-size: 15px;
       }
-      footer .wrap {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr;
+        gap: 32px;
       }
-      footer nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
+      .footer-grid p {
+        margin-top: 12px;
+        color: var(--muted);
+        max-width: 22em;
       }
-      footer a {
-        color: var(--ink-secondary);
+      .footer-grid h4 {
+        margin: 0 0 12px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .footer-grid ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+      }
+      .footer-grid ul a {
+        color: var(--muted);
         text-decoration: none;
       }
-      footer a:hover {
-        color: var(--ink);
+      .footer-grid ul a:hover {
+        color: var(--highlight);
+      }
+      .footer-bottom {
+        margin-top: 40px;
+        color: var(--subtle);
+        font-size: 14px;
+      }
+      @media (max-width: 640px) {
+        .footer-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .footer-grid > div:first-child {
+          grid-column: 1 / -1;
+        }
       }
 
+      .reveal {
+        opacity: 0;
+        transform: translateY(18px);
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s ease;
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .reveal {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+      }
       :focus-visible {
-        outline: 3px solid var(--brand);
+        outline: 3px solid var(--highlight);
         outline-offset: 3px;
         border-radius: 8px;
-      }
-      .visually-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        white-space: nowrap;
       }
     </style>
   </head>
   <body>
-    <header class="wrap nav">
-      <a class="brand" href="#top" aria-label="Tally home">
-        <img src="assets/icon-256.png" alt="" width="34" height="34" />
-        Tally
-      </a>
-      <nav class="nav-links" aria-label="Sections">
-        <a class="optional" href="#features">Features</a>
-        <a class="optional" href="#privacy">Privacy</a>
-        <a class="optional" href="#install">Install</a>
-        <a
-          class="button button-secondary button-small"
-          href="https://github.com/dheerajkoppu/tally"
+    <header class="header">
+      <nav class="container" aria-label="Main">
+        <a class="logo" href="#top"
+          ><img
+            src="assets/icon-256.png"
+            alt=""
+            width="38"
+            height="38"
+          />Tally</a
         >
-          <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
-            <path
-              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
-            />
-          </svg>
-          GitHub
-        </a>
+        <ul class="menu">
+          <li class="text-link"><a href="#features">Features</a></li>
+          <li class="text-link"><a href="#privacy">Privacy</a></li>
+          <li class="text-link"><a href="#faq">FAQ</a></li>
+          <li class="github-link">
+            <a
+              class="pill pill-dark"
+              href="https://github.com/dheerajkoppu/tally"
+              >GitHub</a
+            >
+          </li>
+          <li>
+            <a
+              class="pill pill-primary"
+              href="https://github.com/dheerajkoppu/tally/releases/latest/download/Tally.zip"
+              >Download</a
+            >
+          </li>
+        </ul>
       </nav>
     </header>
 
     <main id="top">
-      <section class="hero wrap">
-        <img
-          class="hero-icon"
-          src="assets/icon-256.png"
-          alt=""
-          width="104"
-          height="104"
-        />
-        <h1>Every app on your Mac, <span class="counted">counted.</span></h1>
-        <p class="lead">
-          Tally is a free, open-source system monitor. It adds every helper
-          process to the app it works for, so you see which apps are really
-          using your CPU, memory, energy, disk and network.
-        </p>
-        <div class="hero-actions">
-          <a
-            class="button button-primary"
-            href="https://github.com/dheerajkoppu/tally/releases/latest/download/Tally.zip"
-          >
-            <svg
-              viewBox="0 0 20 20"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" />
-            </svg>
-            Download for Mac
-          </a>
-          <a
-            class="button button-secondary"
-            href="https://github.com/dheerajkoppu/tally"
-            >View the source</a
-          >
-        </div>
-        <p class="hero-meta">
-          <span>Free forever</span><span>MIT licensed</span
-          ><span>macOS 15 or later</span>
-        </p>
-
-        <div class="window">
-          <div class="window-bar" aria-hidden="true">
-            <span></span><span></span><span></span>
-          </div>
-          <picture>
-            <source
-              media="(prefers-color-scheme: dark)"
-              srcset="assets/overview-dark.png"
-            />
-            <img
-              src="assets/overview-light.png"
-              width="2160"
-              height="1587"
-              alt="Tally's Overview: CPU, memory, GPU, disk, network and battery, memory and power by app, temperatures, fans and accessory batteries"
-            />
-          </picture>
-        </div>
-
-        <div
-          class="count-strip"
-          role="list"
-          aria-label="One moment on the Mac that built this page"
-        >
-          <div role="listitem">
-            <strong>2,147</strong><span>processes running</span>
-          </div>
-          <div role="listitem" class="highlight">
-            <strong>79</strong><span>apps they belong to</span>
-          </div>
-          <div role="listitem">
-            <strong>1</strong><span>row per app in Tally</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="free wrap">
-        <p class="eyebrow">Free, and staying that way</p>
-        <h2>No price tag. No license key. No catch.</h2>
-        <p class="lead">
-          You shouldn't have to pay to find out what your own Mac is doing.
-          Tally is MIT licensed and all of it is on GitHub. If it's missing
-          something, open an issue, or build it and send a pull request.
-        </p>
-        <ul class="free-list">
-          <li>
-            <svg
-              viewBox="0 0 16 16"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m3 8.5 3 3 7-7" /></svg
-            >No trial
-          </li>
-          <li>
-            <svg
-              viewBox="0 0 16 16"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m3 8.5 3 3 7-7" /></svg
-            >No account
-          </li>
-          <li>
-            <svg
-              viewBox="0 0 16 16"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m3 8.5 3 3 7-7" /></svg
-            >No ads
-          </li>
-          <li>
-            <svg
-              viewBox="0 0 16 16"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m3 8.5 3 3 7-7" /></svg
-            >No subscription
-          </li>
-          <li>
-            <svg
-              viewBox="0 0 16 16"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m3 8.5 3 3 7-7" /></svg
-            >Every update free
-          </li>
-        </ul>
-      </section>
-
-      <section class="wrap" id="features">
-        <div class="section-head">
-          <p class="eyebrow">What it does</p>
-          <h2>Everything Activity Monitor shows, sorted into apps.</h2>
-          <p class="lead">
-            Plus the things it never showed you: what happened while you weren't
-            looking, which project a stray server belongs to, and how warm your
-            Mac is running.
+      <section class="hero">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="container">
+          <h1>See which <span>apps</span> are really using your Mac</h1>
+          <p class="subheading">
+            Tally counts every helper process toward the app it belongs to, so a
+            thousand processes become a list of apps you recognize. Free, open
+            source, and it never goes online.
           </p>
-        </div>
-        <div class="features">
-          <article class="feature">
-            <div class="feature-icon">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              >
-                <path d="M7 7.5V6a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-1.5M4 9.5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 11.5h1.5M11.5 11.5H13M8 15.5h1.5M11.5 15.5H13" />
-              </svg>
-            </div>
-            <h3>Apps, not processes</h3>
-            <p>
-              Renderers, GPU helpers, plugins and language servers count toward
-              the app that started them. One row per app.
-            </p>
-          </article>
-          <article class="feature">
-            <div class="feature-icon">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect x="3" y="4" width="18" height="16" rx="3" />
-                <path d="M3 9h18M9 4v5M15 4v5" />
-              </svg>
-            </div>
-            <h3>A tab for everything</h3>
-            <p>
-              Separate views for CPU, memory, disk, network, GPU and battery, each with a live chart and a ranked list of the apps driving it.
-            </p>
-          </article>
-          <article class="feature">
-            <div class="feature-icon">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 7v5l3 2" />
-              </svg>
-            </div>
-            <h3>30 days of history</h3>
-            <p>
-              Scroll back through the past month to see what was busy while you were away, and which apps were responsible. It all lives in a single local database.
-            </p>
-          </article>
-          <article class="feature">
-            <div class="feature-icon">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15zM10 21h4" />
-              </svg>
-            </div>
-            <h3>Alerts for runaway apps</h3>
-            <p>
-              Get a heads-up when something pins the CPU, leaks memory, or won't stop writing to disk.
-            </p>
-          </article>
-          <article class="feature">
-            <div class="feature-icon">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
+          <div class="store-buttons">
+            <a
+              class="store-button primary"
+              href="https://github.com/dheerajkoppu/tally/releases/latest/download/Tally.zip"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path
-                  d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                  d="M16.37 12.64c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.18-1.73-1.35-.14-2.64.8-3.33.8-.69 0-1.74-.78-2.87-.76-1.47.02-2.83.86-3.59 2.18-1.53 2.66-.39 6.6 1.1 8.76.73 1.05 1.6 2.24 2.73 2.2 1.1-.05 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.07 2.65-2.13.84-1.22 1.18-2.4 1.2-2.47-.03-.01-2.3-.88-2.33-3.52zM14.2 6.19c.6-.73 1.01-1.74.9-2.75-.87.04-1.92.58-2.54 1.3-.56.64-1.05 1.67-.92 2.66.97.07 1.96-.49 2.56-1.21z"
                 />
-                <path d="m9 12-2 2 2 2M15 12l2 2-2 2" />
               </svg>
-            </div>
-            <h3>Dev servers by project</h3>
-            <p>
-              Local servers and listening ports, filed under the repo they run from. Forgotten ones that haven't done anything in days get flagged, with a stop button that asks before it acts.
-            </p>
-          </article>
-          <article class="feature">
-            <div class="feature-icon">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+              <span
+                ><small>Free download</small
+                ><strong>Download for Mac</strong></span
               >
-                <rect x="3" y="3" width="18" height="18" rx="3" />
-                <path d="M3 8h18M14 5.5h4" />
-              </svg>
-            </div>
-            <h3>In your menu bar</h3>
-            <p>
-              Choose how it shows up: a symbol, a live number, a mini chart, or a stack of readings. Click for the full picture.
-            </p>
-          </article>
-          <article class="feature">
-            <div class="feature-icon">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
+            </a>
+            <a
+              class="store-button dark"
+              href="https://github.com/dheerajkoppu/tally"
+            >
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                 <path
-                  d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.8 16a4.8 4.8 0 0 1 6.4 0"
+                  d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
                 />
-                <circle cx="12" cy="19.5" r="1" fill="currentColor" />
               </svg>
-            </div>
-            <h3>Ethernet and Wi‑Fi, side by side</h3>
-            <p>
-              On both at once? Each connection gets its own download and upload
-              speed, plus its link speed.
-            </p>
-          </article>
-          <article class="feature">
-            <div class="feature-icon">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+              <span
+                ><small>Open source</small><strong>View on GitHub</strong></span
               >
-                <path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z" />
-                <path d="M12 9v7" />
-              </svg>
+            </a>
+          </div>
+          <p class="hero-note">
+            Version 1.0.1 · macOS 15 or later · Apple silicon and Intel
+          </p>
+          <div class="hero-shot">
+            <div class="frame">
+              <div class="frame-bar" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  srcset="assets/overview-dark.png"
+                />
+                <img
+                  src="assets/overview-light.png"
+                  width="2160"
+                  height="1587"
+                  alt="Tally's Overview: CPU, memory, GPU, disk, network and battery, with memory and power broken down by app"
+                />
+              </picture>
             </div>
-            <h3>Temperatures, fans, batteries</h3>
-            <p>
-              See how hot the chip is running and how fast the fans spin, plus charge levels for your wireless accessories. Take manual control of the fans if you like.
-            </p>
-          </article>
-          <article class="feature">
-            <div class="feature-icon">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z" />
-                <path d="M15.5 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" />
-              </svg>
-            </div>
-            <h3>Volume per app</h3>
-            <p>
-              Lower one noisy app without touching anything else. Sound passes straight through and is never saved.
-            </p>
-          </article>
+          </div>
         </div>
       </section>
 
-      <section class="wrap">
-        <div class="split">
-          <div>
-            <p class="eyebrow">Built to stay out of the way</p>
-            <h2>A monitor that doesn't top its own list.</h2>
+      <section class="facts">
+        <div class="container">
+          <p>One afternoon on the Mac Tally was built on</p>
+          <ul>
+            <li><strong>2,147</strong><span>processes running</span></li>
+            <li><strong>79</strong><span>apps in Tally</span></li>
+            <li><strong>0.45%</strong><span>CPU for Tally itself</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="benefit" id="features">
+        <div class="container benefit-grid">
+          <div class="benefit-media reveal">
+            <div class="frame">
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  srcset="assets/memory-dark.png"
+                />
+                <img
+                  src="assets/memory-light.png"
+                  width="1240" height="1665" alt="Tally's Memory tab: memory in use over time and a list of apps ranked by memory, each with its process count"
+                />
+              </picture>
+            </div>
+          </div>
+          <div class="reveal">
+            <h2>One row per app</h2>
             <p class="lead">
-              Tally is a native Mac app written in Swift, with no web views and no Electron.
+              Chrome's renderers, your editor's language servers and every GPU
+              helper show up under the app that started them, with a single
+              number for each.
             </p>
-            <ul class="checks">
+            <ul class="bullets">
               <li>
                 <svg
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
+                  viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="1.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"
+                  aria-hidden="true"
                 >
-                  <path d="m4 10.5 4 4 8-9" /></svg
-                ><span
-                  ><strong>Refreshes every 5 seconds</strong> by default. Pick
-                  1, 2, 5 or 10.</span
-                >
+                  <rect x="3.75" y="3.75" width="6.5" height="6.5" rx="1.5" />
+                  <rect x="13.75" y="3.75" width="6.5" height="6.5" rx="1.5" />
+                  <rect x="3.75" y="13.75" width="6.5" height="6.5" rx="1.5" />
+                  <rect x="13.75" y="13.75" width="6.5" height="6.5" rx="1.5" />
+                </svg>
+                <div>
+                  <h3>Helpers included</h3>
+                  <p>
+                    Renderers, plugins and background helpers count toward their
+                    app instead of cluttering the list.
+                  </p>
+                </div>
               </li>
               <li>
                 <svg
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
+                  viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="1.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"
+                  aria-hidden="true"
                 >
-                  <path d="m4 10.5 4 4 8-9" /></svg
-                ><span
-                  ><strong>Slows down when you look away.</strong> Closed
-                  windows cost nothing, and heavier checks run far less
-                  often.</span
-                >
+                  <path
+                    d="M3.75 20.25h16.5M6.75 16.5v-4.5M11.25 16.5V7.5M15.75 16.5v-6M20.25 16.5V4.5"
+                  />
+                </svg>
+                <div>
+                  <h3>CPU, memory, power, disk, network</h3>
+                  <p>
+                    Each tab ranks the apps behind its number, and any app opens
+                    to show its processes.
+                  </p>
+                </div>
               </li>
               <li>
                 <svg
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
+                  viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="1.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                >
-                  <path d="m4 10.5 4 4 8-9" /></svg
-                ><span
-                  ><strong>Feels like part of macOS.</strong> Light and dark
-                  mode, keyboard and VoiceOver support, and Reduce Motion
-                  respected.</span
-                >
-              </li>
-              <li>
-                <svg
-                  viewBox="0 0 20 20"
                   aria-hidden="true"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
                 >
-                  <path d="m4 10.5 4 4 8-9" /></svg
-                ><span
-                  ><strong>Nothing happens behind your back.</strong> Quitting an app or stopping a server always needs your confirmation.</span
-                >
+                  <circle cx="12" cy="12" r="8.25" />
+                  <path d="M12 7.5V12l3 2" />
+                </svg>
+                <div>
+                  <h3>A month of history</h3>
+                  <p>
+                    Scroll back up to 30 days to see what ran while you were
+                    away. It's kept in one local file.
+                  </p>
+                </div>
               </li>
             </ul>
           </div>
-          <picture class="split-image">
-            <source
-              media="(prefers-color-scheme: dark)"
-              srcset="assets/popover-dark.png"
-            />
-            <img
-              src="assets/popover-light.png"
-              width="760"
-              height="1040"
-              alt="The Tally menu bar panel: CPU, memory, network, disk, GPU and battery, and the busiest apps"
-            />
-          </picture>
         </div>
       </section>
 
-      <section class="wrap" id="privacy">
-        <div class="panel">
-          <p class="eyebrow">Privacy</p>
-          <h2>It never goes online.</h2>
-          <p class="lead" style="margin-top: 16px">
-            A system monitor learns a lot about how you use your computer. Tally keeps what it learns in a local file you can delete any time.
-          </p>
-          <div class="privacy-grid">
-            <div>
-              <h3>
+      <section class="benefit flip">
+        <div class="container benefit-grid">
+          <div class="benefit-media reveal">
+            <div class="frame narrow">
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  srcset="assets/menu-bar-dark.png"
+                />
+                <img
+                  src="assets/menu-bar-light.png"
+                  width="760"
+                  height="1040"
+                  alt="The Tally menu bar panel: CPU, memory, network, disk, GPU and battery, and the busiest apps"
+                />
+              </picture>
+            </div>
+          </div>
+          <div class="reveal">
+            <h2>Right there in your menu bar</h2>
+            <p class="lead">
+              Glance up for a reading, or click for every metric and the apps
+              working hardest right now.
+            </p>
+            <ul class="bullets">
+              <li>
                 <svg
                   viewBox="0 0 24 24"
-                  aria-hidden="true"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="1.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"
+                  aria-hidden="true"
                 >
-                  <circle cx="12" cy="12" r="9" />
+                  <rect x="3" y="4.5" width="18" height="15" rx="2.25" />
+                  <path d="M3 9h18M14.25 6.75h3.75" />
+                </svg>
+                <div>
+                  <h3>Shown your way</h3>
+                  <p>
+                    A symbol, a live number, a small chart, or a few readings
+                    stacked on top of each other.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
                   <path
-                    d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18M4 4l16 16"
-                  /></svg
-                >No connections
-              </h3>
-              <p>
-                No update server, no license check, no crash reporter. Tally
-                makes no network connections of its own.
-              </p>
-            </div>
-            <div>
-              <h3>
+                    d="M14.86 17.08a24 24 0 0 0 5.45-1.31 8.97 8.97 0 0 1-2.31-6.02V9a6 6 0 0 0-12 0v.75a8.97 8.97 0 0 1-2.31 6.02 24 24 0 0 0 5.45 1.31m5.72 0a24.3 24.3 0 0 1-5.72 0m5.72 0a3 3 0 1 1-5.72 0"
+                  />
+                </svg>
+                <div>
+                  <h3>Alerts for runaway apps</h3>
+                  <p>
+                    A notification when something pins the CPU, leaks memory, or
+                    won't stop writing to disk.
+                  </p>
+                </div>
+              </li>
+              <li>
                 <svg
                   viewBox="0 0 24 24"
-                  aria-hidden="true"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="1.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                >
-                  <rect x="4" y="10" width="16" height="11" rx="2" />
-                  <path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg
-                >No account, no analytics
-              </h3>
-              <p>
-                Nothing to sign up for, and no usage data collected. Not now, not later.
-              </p>
-            </div>
-            <div>
-              <h3>
-                <svg
-                  viewBox="0 0 24 24"
                   aria-hidden="true"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
                 >
-                  <path d="m8 7-5 5 5 5M16 7l5 5-5 5" /></svg
-                >Check for yourself
-              </h3>
-              <p>
-                Every line of code is public. You don't have to take our word
-                for any of this.
-              </p>
-            </div>
+                  <path
+                    d="M12 9v3.75m-9.3 3.38c-.87 1.5.22 3.37 1.95 3.37h14.7c1.73 0 2.81-1.87 1.95-3.37L13.95 3.38c-.87-1.5-3.03-1.5-3.9 0zM12 15.75h.01"
+                  />
+                </svg>
+                <div>
+                  <h3>A heads-up under load</h3>
+                  <p>
+                    The menu bar item turns into a warning symbol while memory,
+                    CPU or heat runs high.
+                  </p>
+                </div>
+              </li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <section class="wrap" id="install">
-        <div class="section-head">
-          <p class="eyebrow">Install</p>
-          <h2>Up and running in a minute.</h2>
+      <section class="benefit">
+        <div class="container benefit-grid">
+          <div class="benefit-media reveal">
+            <div class="frame">
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  srcset="assets/network-dark.png"
+                />
+                <img
+                  src="assets/network-light.png"
+                  width="1240" height="1020" alt="Tally's Network tab: download speed over time, upload, weekly total, and Ethernet and Wi-Fi listed separately with their speeds and link rates"
+                />
+              </picture>
+            </div>
+          </div>
+          <div class="reveal">
+            <h2>Ethernet and Wi‑Fi, side by side</h2>
+            <p class="lead">
+              Plugged in and on Wi‑Fi at the same time? Each connection gets its own row, so you can see which one is doing the work.
+            </p>
+            <ul class="bullets">
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M7.5 7.5 12 3l4.5 4.5M12 3v12M16.5 16.5 12 21l-4.5-4.5"
+                  />
+                </svg>
+                <div>
+                  <h3>Speeds per connection</h3>
+                  <p>
+                    Download and upload for every active connection, with the
+                    one macOS is using marked.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M8.29 15.71a5.25 5.25 0 0 1 7.42 0M5.11 12.53a9.75 9.75 0 0 1 13.78 0M1.93 9.35a14.25 14.25 0 0 1 20.14 0M12.53 18.47a.75.75 0 1 1-1.06 0 .75.75 0 0 1 1.06 0z"
+                  />
+                </svg>
+                <div>
+                  <h3>Link speed</h3>
+                  <p>
+                    The rate each connection negotiated, like 1 Gb/s over a
+                    cable or 325 Mb/s over the air.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6.75 3v2.25M17.25 3v2.25M3.75 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h12a2.25 2.25 0 0 1 2.25 2.25v11.25A2.25 2.25 0 0 1 18 21H6a2.25 2.25 0 0 1-2.25-2.25zM3.75 10.5h16.5"
+                  />
+                </svg>
+                <div>
+                  <h3>Running totals</h3>
+                  <p>
+                    How much you've moved today, this week and over the last 30
+                    days.
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
-        <ol class="steps">
-          <li>
-            <h3>Download</h3>
-            <p>
-              <a
-                href="https://github.com/dheerajkoppu/tally/releases/latest/download/Tally.zip"
-                >Get Tally.zip</a
-              >
-              and open it. Drag Tally into Applications.
-            </p>
-          </li>
-          <li>
-            <h3>Open it</h3>
-            <p>
-              macOS will say it can't check Tally for malicious software. Click
-              Done.
-            </p>
-          </li>
-          <li>
-            <h3>Allow it once</h3>
-            <p>
-              Go to System Settings › Privacy &amp; Security, scroll down, and
-              click Open Anyway.
-            </p>
-          </li>
-        </ol>
-        <p class="note">
-          That warning appears because Tally isn't signed with a paid Apple
-          developer certificate, not because anything is wrong with it. You only
-          see it once. Prefer Terminal? This does the same thing:
-        </p>
-        <div class="code">
-          <code id="unquarantine"
-            >xattr -dr com.apple.quarantine /Applications/Tally.app</code
-          >
-          <button class="copy" type="button" data-copy="unquarantine">
-            Copy
-          </button>
-        </div>
-        <p class="requirements">
-          Needs macOS 15 Sequoia or newer · Runs on Apple silicon and Intel · Sensor readings are richer on Apple silicon
-        </p>
       </section>
 
-      <section class="open-source wrap">
-        <p class="eyebrow">Open source</p>
-        <h2>Built in the open.</h2>
-        <p class="lead">
-          Found a bug, have an idea, or want to add a feature? Tally takes
-          issues and pull requests on GitHub.
-        </p>
-        <div class="hero-actions">
-          <a
-            class="button button-primary"
-            href="https://github.com/dheerajkoppu/tally"
-            >Star on GitHub</a
-          >
-          <a
-            class="button button-secondary"
-            href="https://github.com/dheerajkoppu/tally/blob/main/CONTRIBUTING.md"
-            >How to contribute</a
-          >
+      <section class="benefit flip">
+        <div class="container benefit-grid">
+          <div class="benefit-media reveal">
+            <div class="frame">
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  srcset="assets/projects-dark.png"
+                />
+                <img
+                  src="assets/projects-light.png"
+                  width="1240" height="404" alt="Tally's Projects tab: three local servers listed by project folder, with their ports and memory"
+                />
+              </picture>
+            </div>
+          </div>
+          <div class="reveal">
+            <h2>Find the dev server you forgot</h2>
+            <p class="lead">
+              Tally files local servers under the project folder they run from,
+              along with the ports they're holding.
+            </p>
+            <ul class="bullets">
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.06-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.38a1.5 1.5 0 0 1-1.06-.44z"
+                  />
+                </svg>
+                <div>
+                  <h3>Sorted by project</h3>
+                  <p>
+                    See which repo is sitting on port 5173 without reaching for
+                    lsof.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M21.75 12a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0zM12 7.5v4.5h3.75"
+                  />
+                </svg>
+                <div>
+                  <h3>Idle servers flagged</h3>
+                  <p>
+                    Servers that haven't handled anything in days are called out
+                    so they stop eating memory.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M9 12.75 11.25 15 15 9.75m-3-7.04A11.96 11.96 0 0 1 3.6 6 12 12 0 0 0 3 9.75c0 5.59 3.82 10.29 9 11.62 5.18-1.33 9-6.03 9-11.62 0-1.31-.21-2.57-.6-3.75h-.15c-3.2 0-6.1-1.25-8.25-3.29z"
+                  />
+                </svg>
+                <div>
+                  <h3>Stopped only when you say</h3>
+                  <p>
+                    One click stops a server, after you confirm. Tally never
+                    quits anything on its own.
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="extras">
+        <div class="container reveal">
+          <h2>Also in Tally</h2>
+          <ul class="bullets">
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M14.25 14.46V4.5a2.25 2.25 0 1 0-4.5 0v9.96a4.13 4.13 0 1 0 4.5 0zM12 9v7.5"
+                />
+              </svg>
+              <div>
+                <h3>Temperatures and fans</h3>
+                <p>
+                  How hot the chip is running and how fast the fans spin, with
+                  optional manual fan control.
+                </p>
+              </div>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M21 10.5h.38c.62 0 1.12.5 1.12 1.13v2.25c0 .62-.5 1.12-1.12 1.12H21m-16.5 3.75h13.5A2.25 2.25 0 0 0 20.25 16.5v-9A2.25 2.25 0 0 0 18 5.25H4.5A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25zM6 9v6"
+                />
+              </svg>
+              <div>
+                <h3>Battery health</h3>
+                <p>
+                  The same maximum capacity System Settings reports, plus cycle
+                  count and live power draw.
+                </p>
+              </div>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M19.11 5.25a9.75 9.75 0 0 1 0 13.5M15.93 8.43a5.25 5.25 0 0 1 0 7.14M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.7-.51-1.93-1.36a9.8 9.8 0 0 1 0-5.28c.23-.85 1.05-1.36 1.93-1.36z"
+                />
+              </svg>
+              <div>
+                <h3>Volume per app</h3>
+                <p>
+                  Turn one noisy app down without touching the others. Sound
+                  passes straight through.
+                </p>
+              </div>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="6" y="3" width="12" height="18" rx="6" />
+                <path d="M12 7v3" />
+              </svg>
+              <div>
+                <h3>Wireless accessories</h3>
+                <p>
+                  Battery levels for connected Bluetooth headphones, mice and
+                  keyboards.
+                </p>
+              </div>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2.25 15.75 7.41 10.6a2.25 2.25 0 0 1 3.18 0l5.16 5.15m-1.5-1.5 1.41-1.41a2.25 2.25 0 0 1 3.18 0l2.91 2.91M3.75 19.5h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5zM14.25 8.25h.01"
+                />
+              </svg>
+              <div>
+                <h3>Snapshots</h3>
+                <p>
+                  Save or copy an image of your stats or the whole dashboard, in
+                  light or dark.
+                </p>
+              </div>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 3v18M12 3a9 9 0 0 1 0 18" />
+              </svg>
+              <div>
+                <h3>Feels like macOS</h3>
+                <p>
+                  Light and dark mode, full keyboard and VoiceOver support, and
+                  Reduce Motion respected.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="privacy" id="privacy">
+        <div class="container reveal">
+          <h2>Nothing leaves your Mac</h2>
+          <p class="lead">
+            A system monitor sees a lot. Tally doesn't have a server to send any
+            of it to.
+          </p>
+          <ul class="bullets">
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.6 9h16.8M3.6 15h16.8M12 3a13.5 13.5 0 0 1 0 18M12 3a13.5 13.5 0 0 0 0 18M4 4l16 16"
+                />
+              </svg>
+              <div>
+                <h3>No network connections</h3>
+                <p>
+                  No update checks, no license server, no crash reporter. Tally
+                  never opens a connection of its own.
+                </p>
+              </div>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25z"
+                />
+              </svg>
+              <div>
+                <h3>No account, no analytics</h3>
+                <p>
+                  There's nothing to sign up for, and no record of what you run
+                  is kept anywhere but your Mac.
+                </p>
+              </div>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"
+                />
+              </svg>
+              <div>
+                <h3>Open source</h3>
+                <p>
+                  Every line is on GitHub under the MIT license, so anyone can
+                  check these promises.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="faq" id="faq">
+        <div class="container faq-grid">
+          <div class="faq-intro reveal">
+            <p class="label">FAQ</p>
+            <h2>Questions, answered</h2>
+            <p>
+              Something else?
+              <a href="https://github.com/dheerajkoppu/tally/issues"
+                >Open an issue on GitHub</a
+              >.
+            </p>
+          </div>
+          <div class="faq-list reveal">
+            <details>
+              <summary>Is Tally really free?</summary>
+              <div class="answer">
+                <p>
+                  Yes. There's no paid tier, trial, subscription or ads. Tally
+                  is MIT licensed, and every update is free.
+                </p>
+              </div>
+            </details>
+            <details>
+              <summary>
+                Why does macOS warn me the first time I open it?
+              </summary>
+              <div class="answer">
+                <p>
+                  Tally isn't signed with a paid Apple developer certificate
+                  yet, so macOS can't check it for you. Click Done, then open
+                  System Settings › Privacy &amp; Security, scroll down and
+                  click Open Anyway. You only do this once.
+                </p>
+                <p>Prefer Terminal? This does the same thing:</p>
+                <div class="code">
+                  <code id="unquarantine"
+                    >xattr -dr com.apple.quarantine
+                    /Applications/Tally.app</code
+                  ><button class="copy" type="button" data-copy="unquarantine">
+                    Copy
+                  </button>
+                </div>
+              </div>
+            </details>
+            <details>
+              <summary>Will it slow my Mac down?</summary>
+              <div class="answer">
+                <p>
+                  It shouldn't. With only its menu bar item running, Tally
+                  averaged under half a percent of one CPU core in our tests. It
+                  refreshes every 5 seconds by default, slows down when no
+                  window is open, and a closed window costs nothing.
+                </p>
+              </div>
+            </details>
+            <details>
+              <summary>Does it send anything anywhere?</summary>
+              <div class="answer">
+                <p>
+                  No. Tally makes no network connections of its own. Your
+                  history lives in one file in your Library folder on your Mac.
+                </p>
+              </div>
+            </details>
+            <details>
+              <summary>Which Macs does it run on?</summary>
+              <div class="answer">
+                <p>
+                  Any Mac with macOS 15 Sequoia or later, Apple silicon or
+                  Intel. Temperatures and power readings are more detailed on
+                  Apple silicon.
+                </p>
+              </div>
+            </details>
+            <details>
+              <summary>What is the fan helper?</summary>
+              <div class="answer">
+                <p>
+                  Changing fan speeds needs administrator rights, so Tally asks
+                  once for your password and installs a small helper that only
+                  sets fan speeds. It puts every fan back to automatic when
+                  Tally quits. It's optional, and you can remove it from the fan
+                  controls.
+                </p>
+              </div>
+            </details>
+            <details>
+              <summary>How do I update?</summary>
+              <div class="answer">
+                <p>
+                  Tally doesn't check for updates, because it never goes online.
+                  Download the latest version from this page or GitHub and
+                  replace the copy in your Applications folder. Your history and
+                  settings stay.
+                </p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta">
+        <div class="container">
+          <div class="cta-panel reveal">
+            <img src="assets/icon-256.png" alt="" width="88" height="88" />
+            <h2>Get Tally for your Mac</h2>
+            <p>
+              Free for everyone, with nothing to sign up for. It takes about a
+              minute to install.
+            </p>
+            <div class="store-buttons">
+              <a
+                class="store-button primary"
+                href="https://github.com/dheerajkoppu/tally/releases/latest/download/Tally.zip"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path
+                    d="M16.37 12.64c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.18-1.73-1.35-.14-2.64.8-3.33.8-.69 0-1.74-.78-2.87-.76-1.47.02-2.83.86-3.59 2.18-1.53 2.66-.39 6.6 1.1 8.76.73 1.05 1.6 2.24 2.73 2.2 1.1-.05 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.07 2.65-2.13.84-1.22 1.18-2.4 1.2-2.47-.03-.01-2.3-.88-2.33-3.52zM14.2 6.19c.6-.73 1.01-1.74.9-2.75-.87.04-1.92.58-2.54 1.3-.56.64-1.05 1.67-.92 2.66.97.07 1.96-.49 2.56-1.21z"
+                  />
+                </svg>
+                <span
+                  ><small>Free download</small
+                  ><strong>Download for Mac</strong></span
+                >
+              </a>
+              <a
+                class="store-button dark"
+                href="https://github.com/dheerajkoppu/tally"
+              >
+                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path
+                    d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+                  />
+                </svg>
+                <span
+                  ><small>Star it</small><strong>View on GitHub</strong></span
+                >
+              </a>
+            </div>
+            <p class="hero-note">Version 1.0.1 · 8 MB · macOS 15 or later</p>
+          </div>
         </div>
       </section>
     </main>
 
     <footer>
-      <div class="wrap">
-        <p>
-          Tally is free software under the MIT License. Made by
-          <a href="https://github.com/dheerajkoppu">Dheeraj Koppu</a>.
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <a class="logo" href="#top"
+              ><img
+                src="assets/icon-256.png"
+                alt=""
+                width="38"
+                height="38"
+              />Tally</a
+            >
+            <p>A free, open-source system monitor for Mac.</p>
+          </div>
+          <div>
+            <h4>Tally</h4>
+            <ul>
+              <li>
+                <a
+                  href="https://github.com/dheerajkoppu/tally/releases/latest/download/Tally.zip"
+                  >Download</a
+                >
+              </li>
+              <li>
+                <a href="https://github.com/dheerajkoppu/tally/releases"
+                  >Releases</a
+                >
+              </li>
+              <li><a href="#faq">FAQ</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Project</h4>
+            <ul>
+              <li>
+                <a href="https://github.com/dheerajkoppu/tally">Source code</a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/dheerajkoppu/tally/blob/main/CONTRIBUTING.md"
+                  >Contributing</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/dheerajkoppu/tally/blob/main/SECURITY.md"
+                  >Security</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/dheerajkoppu/tally/blob/main/LICENSE"
+                  >MIT License</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p class="footer-bottom">
+          Made by <a href="https://github.com/dheerajkoppu">Dheeraj Koppu</a>.
         </p>
-        <nav aria-label="Footer">
-          <a href="https://github.com/dheerajkoppu/tally/releases">Releases</a>
-          <a href="https://github.com/dheerajkoppu/tally/issues">Issues</a>
-          <a href="https://github.com/dheerajkoppu/tally/blob/main/SECURITY.md"
-            >Security</a
-          >
-          <a href="https://github.com/dheerajkoppu/tally/blob/main/LICENSE"
-            >License</a
-          >
-        </nav>
       </div>
     </footer>
 
@@ -1279,6 +1672,26 @@
           });
         });
       });
+      if ("IntersectionObserver" in window) {
+        var observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { rootMargin: "0px 0px -10% 0px" },
+        );
+        document.querySelectorAll(".reveal").forEach(function (element) {
+          observer.observe(element);
+        });
+      } else {
+        document.querySelectorAll(".reveal").forEach(function (element) {
+          element.classList.add("visible");
+        });
+      }
     </script>
   </body>
 </html>
