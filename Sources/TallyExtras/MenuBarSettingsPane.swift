@@ -24,11 +24,12 @@ extension MenuBarMetric {
         }
     }
 
-    /// The short figure shown in the menu bar: "24%", "63°", "21 kB/s".
-    func reading(_ snapshot: SystemSnapshot, unit: TemperatureUnit) -> String {
+    /// The short figure shown in the menu bar: "24%", "12.3 GB", "63°", "21 kB/s".
+    func reading(_ snapshot: SystemSnapshot, unit: TemperatureUnit, memoryInGB: Bool) -> String {
         switch self {
         case .cpu: Format.percent(snapshot.cpu.totalPercent).text
-        case .memory: Format.percent(snapshot.memory.usedFraction * 100).text
+        case .memory:
+            memoryInGB ? Format.shortMemory(snapshot.memory.usedBytes).text : Format.percent(snapshot.memory.usedFraction * 100).text
         case .gpu: Format.percent(snapshot.gpu.utilizationPercent).text
         case .network: Format.rate(snapshot.network.downloadBytesPerSecond).text
         case .temperature: snapshot.sensors.cpuTemperatureCelsius.map { Format.temperature($0, unit: unit).text } ?? "–"
@@ -111,6 +112,17 @@ public struct MenuBarSettingsPane: View {
                 SettingsFootnote(metricsHint)
             }
             .disabled(!settings.showInMenuBar)
+
+            Section {
+                Picker(selection: $settings.menuBarMemoryInGB) {
+                    Text("Percentage").tag(false)
+                    Text("Amount Used").tag(true)
+                } label: {
+                    Text("Show Memory As")
+                    Text("Amount Used shows gigabytes, such as 12.3 GB.")
+                }
+            }
+            .disabled(!settings.showInMenuBar || !settings.menuBarMetrics.contains(.memory))
 
             Section {
                 Toggle(isOn: $settings.menuBarWarnings) {
@@ -237,7 +249,7 @@ struct MenuBarPreview: View {
                             Text(metric.shortLabel)
                                 .font(.system(size: 10, weight: .medium))
                                 .foregroundStyle(Palette.ink2)
-                            Text(metric.reading(store.snapshot, unit: settings.temperatureUnit))
+                            Text(metric.reading(store.snapshot, unit: settings.temperatureUnit, memoryInGB: settings.menuBarMemoryInGB))
                                 .font(.system(size: 11, weight: .semibold).monospacedDigit())
                         }
                     }
@@ -250,7 +262,7 @@ struct MenuBarPreview: View {
     }
 
     private func reading(_ metric: MenuBarMetric) -> some View {
-        Text(metric.reading(store.snapshot, unit: settings.temperatureUnit))
+        Text(metric.reading(store.snapshot, unit: settings.temperatureUnit, memoryInGB: settings.menuBarMemoryInGB))
             .font(.system(size: 13, weight: .medium).monospacedDigit())
     }
 
@@ -260,7 +272,7 @@ struct MenuBarPreview: View {
         case .figure, .graph: [primary]
         case .stacked: Array(metrics.prefix(3))
         }
-        let readings = shown.map { "\($0.label) \($0.reading(store.snapshot, unit: settings.temperatureUnit))" }
+        let readings = shown.map { "\($0.label) \($0.reading(store.snapshot, unit: settings.temperatureUnit, memoryInGB: settings.menuBarMemoryInGB))" }
         return ([style.label] + readings).joined(separator: ", ")
     }
 

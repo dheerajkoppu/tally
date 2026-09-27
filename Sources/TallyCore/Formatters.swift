@@ -27,6 +27,12 @@ public enum Format {
         return Figure(String(format: "%.0f", value / (kibi * kibi)), "MB")
     }
 
+    /// RAM in use for the menu bar, with one decimal: "12.3 GB".
+    public static func shortMemory(_ bytes: UInt64) -> Figure {
+        let gib = Double(bytes) / (kibi * kibi * kibi)
+        return gib >= 1 ? Figure(String(format: "%.1f", gib), "GB") : memory(bytes)
+    }
+
     /// Storage sizes: "479.72 GB", "1.2 TB", "458 MB".
     public static func storage(_ bytes: UInt64) -> Figure {
         let value = Double(bytes)

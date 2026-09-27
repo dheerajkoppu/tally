@@ -55,6 +55,8 @@ public final class AppSettings: ObservableObject {
     @Published public var menuBarMetrics: [MenuBarMetric] { didSet { defaults.set(menuBarMetrics.map(\.rawValue), forKey: "menuBarMetrics") } }
     /// Turn the menu bar item into a warning sign when the Mac is under strain.
     @Published public var menuBarWarnings: Bool { didSet { defaults.set(menuBarWarnings, forKey: "menuBarWarnings") } }
+    /// Show memory in the menu bar as the amount in use, "12.3 GB", instead of a percentage.
+    @Published public var menuBarMemoryInGB: Bool { didSet { defaults.set(menuBarMemoryInGB, forKey: "menuBarMemoryInGB") } }
     /// Turning off the Dock icon while the menu bar item is hidden brings the menu bar item back, so Tally stays reachable.
     @Published public var showInDock: Bool {
         didSet {
@@ -96,6 +98,7 @@ public final class AppSettings: ObservableObject {
         let storedMetrics = (defaults.stringArray(forKey: "menuBarMetrics") ?? []).compactMap(MenuBarMetric.init(rawValue:))
         menuBarMetrics = storedMetrics.isEmpty ? [.cpu, .memory] : storedMetrics
         menuBarWarnings = defaults.object(forKey: "menuBarWarnings") as? Bool ?? true
+        menuBarMemoryInGB = defaults.bool(forKey: "menuBarMemoryInGB")
         let storedShowInDock = defaults.object(forKey: "showInDock") as? Bool ?? true
         showInDock = storedShowInDock
         showInMenuBar = (defaults.object(forKey: "showInMenuBar") as? Bool ?? true) || !storedShowInDock

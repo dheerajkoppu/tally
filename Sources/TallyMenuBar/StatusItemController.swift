@@ -70,7 +70,10 @@ public final class StatusItemController {
     private func observeSettings() {
         let settings = AppSettings.shared
         // @Published emits before the value is stored, so read the settings after hopping to the next turn.
-        settingsSubscription = Publishers.CombineLatest4(settings.$menuBarStyle, settings.$menuBarMetrics, settings.$menuBarWarnings, settings.$temperatureUnit)
+        settingsSubscription = Publishers.CombineLatest(
+            Publishers.CombineLatest4(settings.$menuBarStyle, settings.$menuBarMetrics, settings.$menuBarWarnings, settings.$temperatureUnit),
+            settings.$menuBarMemoryInGB
+        )
             .dropFirst()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -140,7 +143,9 @@ public final class StatusItemController {
         var readings: [MenuBarReading] = []
         if style != .icon, store.hasSample {
             let metrics = settings.menuBarMetrics.prefix(style == .stacked ? 3 : 1)
-            readings = metrics.map { MenuBarReadings.reading(for: $0, snapshot: store.snapshot, unit: settings.temperatureUnit) }
+            readings = metrics.map {
+                MenuBarReadings.reading(for: $0, snapshot: store.snapshot, unit: settings.temperatureUnit, memoryInGB: settings.menuBarMemoryInGB)
+            }
         }
         if readings.isEmpty { style = .icon }
         let bars = style == .graph
@@ -150,6 +155,9 @@ public final class StatusItemController {
             style: style,
             metrics: readings.map(\.metric),
             texts: readings.map { style == .stacked ? $0.compactText : $0.text },
+            templates: readings.map {
+                MenuBarReadings.widthTemplate(for: $0.metric, compact: style == .stacked, memoryInGB: settings.menuBarMemoryInGB)
+            },
             bars: bars,
             warning: warning?.level
         )

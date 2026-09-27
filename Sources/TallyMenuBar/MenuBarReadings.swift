@@ -14,13 +14,14 @@ struct MenuBarReading: Equatable {
 enum MenuBarReadings {
     static let graphSampleCount = 10
 
-    static func reading(for metric: MenuBarMetric, snapshot: SystemSnapshot, unit: TemperatureUnit) -> MenuBarReading {
+    static func reading(for metric: MenuBarMetric, snapshot: SystemSnapshot, unit: TemperatureUnit, memoryInGB: Bool) -> MenuBarReading {
         switch metric {
         case .cpu:
             let text = Format.percent(snapshot.cpu.totalPercent).text
             return MenuBarReading(metric: metric, text: text, compactText: text, spokenText: "CPU \(text)")
         case .memory:
-            let text = Format.percent(snapshot.memory.usedFraction * 100).text
+            let memory = snapshot.memory
+            let text = memoryInGB ? Format.shortMemory(memory.usedBytes).text : Format.percent(memory.usedFraction * 100).text
             return MenuBarReading(metric: metric, text: text, compactText: text, spokenText: "Memory \(text) used")
         case .gpu:
             let text = Format.percent(snapshot.gpu.utilizationPercent).text
@@ -79,8 +80,9 @@ enum MenuBarReadings {
 
     /// The widest text a metric shows in everyday use. The item reserves this width so it does not
     /// shift the other menu bar items each time a figure gains or loses a digit.
-    static func widthTemplate(for metric: MenuBarMetric, compact: Bool) -> String {
+    static func widthTemplate(for metric: MenuBarMetric, compact: Bool, memoryInGB: Bool) -> String {
         switch metric {
+        case .memory where memoryInGB: "00.0 GB"
         case .cpu, .memory, .gpu, .battery: "00%"
         case .temperature: "00°"
         case .network: compact ? "000 kB/s" : "↓ 000 kB/s"

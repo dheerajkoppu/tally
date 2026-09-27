@@ -9,6 +9,8 @@ enum StatusItemArtwork {
         var style: MenuBarStyle
         var metrics: [MenuBarMetric]
         var texts: [String]
+        /// The widest text each reading shows in everyday use, from `MenuBarReadings.widthTemplate`.
+        var templates: [String]
         /// Graph bar heights in half points, oldest first.
         var bars: [UInt8]
         var warning: StrainLevel?
@@ -120,10 +122,10 @@ enum StatusItemArtwork {
                 graphRect = NSRect(x: x, y: ((height - graphSize.height) / 2).rounded(), width: graphSize.width, height: graphSize.height)
                 x += graphSize.width
             }
-            if let text = content.texts.first, let metric = content.metrics.first {
+            if let text = content.texts.first {
                 x += glyphGap
                 let textWidth = width(text, .figure)
-                let reserved = max(textWidth, width(MenuBarReadings.widthTemplate(for: metric, compact: false), .figure))
+                let reserved = max(textWidth, width(content.templates.first ?? text, .figure))
                 let baseline = ((height + figureFont.capHeight) / 2).rounded()
                 place(text, .figure, color: ink.primary, x: x + reserved - textWidth, baseline: baseline)
                 x += reserved
@@ -139,7 +141,7 @@ enum StatusItemArtwork {
                 let value = content.texts[index]
                 let captionWidth = width(caption, .caption)
                 let valueWidth = width(value, .value)
-                let column = max(captionWidth, valueWidth, width(MenuBarReadings.widthTemplate(for: metric, compact: true), .value))
+                let column = max(captionWidth, valueWidth, width(content.templates[index], .value))
                 place(caption, .caption, color: ink.secondary, x: x + (column - captionWidth) / 2, baseline: captionBaseline)
                 place(value, .value, color: ink.primary, x: x + (column - valueWidth) / 2, baseline: valueBaseline)
                 x += column
