@@ -86,6 +86,10 @@ public struct GeneralSettingsPane: View {
                         Text("Allow Tally in System Settings, under Login Items.")
                     }
                 }
+                Toggle(isOn: $settings.opensInBackground) {
+                    Text("Open in Background")
+                    Text("Starts without a window. The Dock icon and menus appear only while a Tally window is open.")
+                }
                 Toggle(isOn: $settings.showInDock) {
                     Text("Show in Dock")
                     Text("Keeps an icon in the Dock and the app switcher.")

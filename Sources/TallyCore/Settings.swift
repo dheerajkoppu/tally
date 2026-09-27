@@ -69,6 +69,8 @@ public final class AppSettings: ObservableObject {
             if !showInMenuBar, !showInDock { showInDock = true }
         }
     }
+    /// Start without a window, and keep the Dock icon and menus away while no Tally window is open.
+    @Published public var opensInBackground: Bool { didSet { defaults.set(opensInBackground, forKey: "opensInBackground") } }
     @Published public var temperatureUnit: TemperatureUnit { didSet { defaults.set(temperatureUnit.rawValue, forKey: "temperatureUnit") } }
 
     @Published public var alertsEnabled: Bool { didSet { defaults.set(alertsEnabled, forKey: "alertsEnabled") } }
@@ -97,6 +99,7 @@ public final class AppSettings: ObservableObject {
         let storedShowInDock = defaults.object(forKey: "showInDock") as? Bool ?? true
         showInDock = storedShowInDock
         showInMenuBar = (defaults.object(forKey: "showInMenuBar") as? Bool ?? true) || !storedShowInDock
+        opensInBackground = defaults.bool(forKey: "opensInBackground")
         temperatureUnit = TemperatureUnit(rawValue: defaults.string(forKey: "temperatureUnit") ?? "") ?? .celsius
         alertsEnabled = defaults.object(forKey: "alertsEnabled") as? Bool ?? true
         cpuAlertPercent = defaults.object(forKey: "cpuAlertPercent") as? Double ?? 70

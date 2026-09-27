@@ -25,8 +25,28 @@ final class WindowManager: NSObject, NSWindowDelegate {
             window.setFrame(frame, display: false)
         }
         window.makeKeyAndOrderFront(nil)
+        updateActivationPolicy()
         NSApp.activate()
         engine?.beginFastSampling("main-window")
+    }
+
+    private var hasOpenWindow: Bool {
+        [mainWindow, settingsWindow, welcomeWindow].contains { window in
+            guard let window else { return false }
+            return window.isVisible || window.isMiniaturized
+        }
+    }
+
+    /// Shows the Dock icon and menus when Show in Dock is on, except in the background with no window open.
+    /// The background needs the menu bar item, so Tally is never left without a way back.
+    func updateActivationPolicy() {
+        let settings = AppSettings.shared
+        let inBackground = settings.opensInBackground && settings.showInMenuBar && !hasOpenWindow
+        let policy: NSApplication.ActivationPolicy = settings.showInDock && !inBackground ? .regular : .accessory
+        guard NSApp.activationPolicy() != policy else { return }
+        NSApp.setActivationPolicy(policy)
+        // An app that joins the Dock while in front shows its menus once activated again.
+        if policy == .regular, hasOpenWindow { NSApp.activate() }
     }
 
     /// A standard titled window; `MainView` supplies its toolbar and title.
@@ -51,8 +71,10 @@ final class WindowManager: NSObject, NSWindowDelegate {
     func showSettings() {
         if settingsWindow == nil {
             settingsWindow = SettingsTabViewController.makeWindow()
+            settingsWindow?.delegate = self
         }
         settingsWindow?.makeKeyAndOrderFront(nil)
+        updateActivationPolicy()
         NSApp.activate()
     }
 
@@ -76,12 +98,15 @@ final class WindowManager: NSObject, NSWindowDelegate {
         window.center()
         welcomeWindow = window
         window.makeKeyAndOrderFront(nil)
+        updateActivationPolicy()
         NSApp.activate()
         engine?.beginFastSampling("welcome")
     }
 
     func windowWillClose(_ notification: Notification) {
         guard let window = notification.object as? NSWindow else { return }
+        // The closing window still counts as open until this notification returns.
+        DispatchQueue.main.async { [weak self] in self?.updateActivationPolicy() }
         if window === welcomeWindow {
             engine?.endFastSampling("welcome")
             welcomeWindow = nil

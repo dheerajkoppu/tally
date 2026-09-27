@@ -19,7 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let settings = AppSettings.shared
-        NSApp.setActivationPolicy(settings.showInDock ? .regular : .accessory)
+        windows.updateActivationPolicy()
         NSApp.mainMenu = MainMenu.build()
 
         let store = TallyStore.shared
@@ -62,12 +62,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             .sink { interval in engine.setUpdateInterval(interval) }
             .store(in: &cancellables)
 
-        settings.$showInDock
-            .dropFirst()
-            .sink { showInDock in
-                NSApp.setActivationPolicy(showInDock ? .regular : .accessory)
-                if showInDock { NSApp.activate() }
-            }
+        // Published values change after their publisher fires, so the policy is worked out on the next turn.
+        Publishers.Merge3(settings.$showInDock.dropFirst(), settings.$showInMenuBar.dropFirst(), settings.$opensInBackground.dropFirst())
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.windows.updateActivationPolicy() }
             .store(in: &cancellables)
 
         if SnapshotMode.isRequested {
@@ -81,12 +79,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
             return
         }
 
-        if settings.hasCompletedWelcome {
-            windows.showMain()
-        } else {
+        if !settings.hasCompletedWelcome {
             windows.showWelcome {
                 AppSettings.shared.hasCompletedWelcome = true
             }
+        } else if !settings.opensInBackground {
+            windows.showMain()
         }
     }
 
