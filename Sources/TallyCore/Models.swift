@@ -68,6 +68,56 @@ public struct VolumeInfo: Hashable, Sendable, Identifiable {
     }
 }
 
+/// What an SSD reports about itself: wear, lifetime reads and writes, and any warning it raises.
+public struct DriveHealth: Hashable, Sendable, Identifiable {
+    public var id: String
+    /// e.g. "APPLE SSD AP1024Z"
+    public var model: String
+    public var isInternal: Bool
+    /// The drive's own estimate of its rated life used, 0...255 (it can pass 100).
+    public var percentageUsed: Int
+    /// Spare blocks left for replacing worn ones, 0...100, and the level below which the drive warns.
+    public var availableSparePercent: Int
+    public var availableSpareThreshold: Int
+    /// Raised for low spare blocks, overheating, degraded reliability or a drive gone read-only.
+    public var hasCriticalWarning: Bool
+    public var mediaErrors: UInt64
+    public var bytesRead: UInt64
+    public var bytesWritten: UInt64
+    public var powerOnHours: UInt64
+    public var powerCycles: UInt64
+    public var unsafeShutdowns: UInt64
+
+    public init(
+        id: String, model: String, isInternal: Bool, percentageUsed: Int,
+        availableSparePercent: Int, availableSpareThreshold: Int, hasCriticalWarning: Bool, mediaErrors: UInt64,
+        bytesRead: UInt64, bytesWritten: UInt64, powerOnHours: UInt64, powerCycles: UInt64, unsafeShutdowns: UInt64
+    ) {
+        self.id = id
+        self.model = model
+        self.isInternal = isInternal
+        self.percentageUsed = percentageUsed
+        self.availableSparePercent = availableSparePercent
+        self.availableSpareThreshold = availableSpareThreshold
+        self.hasCriticalWarning = hasCriticalWarning
+        self.mediaErrors = mediaErrors
+        self.bytesRead = bytesRead
+        self.bytesWritten = bytesWritten
+        self.powerOnHours = powerOnHours
+        self.powerCycles = powerCycles
+        self.unsafeShutdowns = unsafeShutdowns
+    }
+
+    /// 0...100, rated life left.
+    public var healthPercent: Double { Double(max(0, 100 - percentageUsed)) }
+
+    /// A warning from the drive, data it could not recover, or wear past its rated life.
+    public var needsAttention: Bool { hasCriticalWarning || mediaErrors > 0 || percentageUsed >= 100 }
+
+    /// "Internal SSD", or the model for an external drive.
+    public var name: String { isInternal ? "Internal SSD" : model }
+}
+
 public struct DiskStats: Hashable, Sendable {
     /// Startup volume capacity.
     public var totalBytes: UInt64 = 0
@@ -76,6 +126,8 @@ public struct DiskStats: Hashable, Sendable {
     public var readBytesPerSecond: Double = 0
     public var writeBytesPerSecond: Double = 0
     public var volumes: [VolumeInfo] = []
+    /// NVMe drives that report their health, internal first. Empty on Macs whose drives do not.
+    public var drives: [DriveHealth] = []
 
     public var usedBytes: UInt64 { totalBytes > freeBytes ? totalBytes - freeBytes : 0 }
 

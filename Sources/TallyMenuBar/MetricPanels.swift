@@ -121,6 +121,13 @@ struct DiskPanel: View {
                     if store.totals.diskWrittenToday > 0 {
                         PanelDetailRow("Written Today", value: Format.total(store.totals.diskWrittenToday).text)
                     }
+                    if let drive = disk.drives.first {
+                        let health = Format.percent(drive.healthPercent).text
+                        PanelDetailRow("Drive Health", value: drive.needsAttention ? "\(health), Needs Attention" : health, dot: drive.needsAttention ? Palette.red : nil)
+                            .help("Rated life left on the \(drive.isInternal ? "internal SSD" : drive.model), as the drive estimates it.")
+                        PanelDetailRow("Total Written", value: Format.total(drive.bytesWritten).text)
+                        PanelDetailRow("Total Read", value: Format.total(drive.bytesRead).text)
+                    }
                 }
                 .padding(.top, 9)
                 PanelTopApps(title: "Top Apps by Disk Writes", tab: .disk, metric: .diskWrite, apps: store.topApps(by: .diskWrite, limit: 5), tint: Palette.disk) {

@@ -34,6 +34,7 @@ final class DiskReader {
     private var volumeState = VolumeState()
     private let volumeQueue = DispatchQueue(label: "tally.system.volumes", qos: .background)
     private var diskImageDevices: [String: Bool] = [:]
+    private let health = DriveHealthReader()
     /// Purgeable bytes per mount path (important-usage capacity minus plain available capacity) and when they were read.
     /// Reading them asks the cache-delete service, so they are read again only every `volumeRefreshHidden`.
     private var purgeable: [String: (bytes: Int, readAt: TimeInterval)] = [:]
@@ -71,6 +72,7 @@ final class DiskReader {
             stats.totalBytes = root.totalBytes
             stats.freeBytes = root.freeBytes
         }
+        stats.drives = health.current(now: now, isVisible: isVisible)
         return stats
     }
 

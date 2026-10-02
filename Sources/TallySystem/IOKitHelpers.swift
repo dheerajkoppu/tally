@@ -17,8 +17,13 @@ enum IORegistry {
 
     /// Every service of a class. The caller owns the returned objects and releases them with `IOObjectRelease`.
     static func services(matching className: String) -> [io_service_t] {
+        services(matching: IOServiceMatching(className))
+    }
+
+    /// Every service that matches a dictionary. The caller releases them, as above.
+    static func services(matching dictionary: CFDictionary?) -> [io_service_t] {
         var iterator: io_iterator_t = 0
-        guard IOServiceGetMatchingServices(kIOMainPortDefault, IOServiceMatching(className), &iterator) == KERN_SUCCESS else { return [] }
+        guard IOServiceGetMatchingServices(kIOMainPortDefault, dictionary, &iterator) == KERN_SUCCESS else { return [] }
         defer { IOObjectRelease(iterator) }
         var services: [io_service_t] = []
         while case let service = IOIteratorNext(iterator), service != 0 {

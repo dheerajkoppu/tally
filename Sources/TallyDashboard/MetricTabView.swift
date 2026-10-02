@@ -44,6 +44,10 @@ public struct MetricTabView: View {
                 MetricConnectionsCard(network: store.snapshot.network, tint: tab.tint, isPlaceholder: !store.hasSample)
                     .equatable()
             }
+            if tab == .disk, !store.snapshot.disk.drives.isEmpty {
+                MetricDrivesCard(drives: store.snapshot.disk.drives, tint: tab.tint)
+                    .equatable()
+            }
             appList(content.list, liveApps: liveApps)
                 .metricForceQuitConfirmation($forceQuitRequest, onDone: resample)
             if tab == .battery, MetricSensorsCard.hasContent(store.snapshot.sensors) {

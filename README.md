@@ -47,6 +47,7 @@ Tally needs macOS 15 Sequoia or later and runs on both Apple silicon and Intel M
 - **Local servers by project.** Servers and listening ports are filed under the repo they run from. Forgotten ones that haven't done anything in days get flagged, with a stop button that asks before it acts.
 - **Menu bar monitor.** Choose a symbol, a live number, a mini chart or a stack of readings. Click it for the full picture.
 - **Every network connection.** Ethernet and Wi‑Fi each show their own speed when you're on both.
+- **SSD health.** How much rated life your drive has left, warnings it raises about itself, and everything written to and read from it since it was new.
 - **Heat, fans and accessories.** How hot the chip is running, how fast the fans spin, and charge levels for wireless accessories. Manual fan control if you want it.
 - **Volume per app.** Lower one noisy app without touching anything else.
 - **Quit and force quit.** From any list, and never without your confirmation.
@@ -72,7 +73,7 @@ It asks for these permissions, and only when you use the feature that needs them
 | Permission                      | Why                                                               |
 | ------------------------------- | ----------------------------------------------------------------- |
 | Notifications                   | Alerts about runaway apps                                         |
-| Bluetooth                       | Charge levels of wireless accessories                     |
+| Bluetooth                       | Charge levels of wireless accessories                             |
 | Screen & System Audio Recording | Per-app volume. Audio passes straight through and is never saved. |
 | Administrator password          | Only if you install the optional fan-control helper               |
 

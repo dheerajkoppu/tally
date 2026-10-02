@@ -85,6 +85,11 @@ for round in 1...rounds {
         let tags = [volume.isRoot ? "startup" : nil, volume.isInternal ? "internal" : "external"].compactMap { $0 }.joined(separator: ", ")
         line("Volume", "\(volume.name) at \(volume.mountPath): \(Format.storage(volume.freeBytes).text) free of \(Format.storage(volume.totalBytes).text) [\(tags)]")
     }
+    for drive in disk.drives {
+        let warning = drive.needsAttention ? ", NEEDS ATTENTION" : ""
+        line("Drive", "\(drive.model): \(Format.percent(drive.healthPercent).text) health\(warning), spare \(drive.availableSparePercent)% (warns below \(drive.availableSpareThreshold)%)")
+        line("Lifetime", "written \(Format.total(drive.bytesWritten).text), read \(Format.total(drive.bytesRead).text), \(drive.powerOnHours) h on, \(drive.powerCycles) power cycles, \(drive.unsafeShutdowns) unsafe shutdowns, \(drive.mediaErrors) media errors")
+    }
 
     print("Network — \(network.interfaceKind.isEmpty ? "none" : network.interfaceKind) (\(network.interfaceName.isEmpty ? "-" : network.interfaceName)), \(network.isConnected ? "connected" : "disconnected")")
     line("Download", Format.rate(network.downloadBytesPerSecond).text)
