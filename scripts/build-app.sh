@@ -1,8 +1,9 @@
 #!/bin/bash
-# Builds build.noindex/Tally.app from the Swift package, with the fan helper inside, and signs both ad hoc.
+# Builds build.noindex/Tally.app from the Swift package, with the fan helper inside, and signs both.
 #   scripts/build-app.sh [release|debug]
 # TALLY_SCRATCH_PATH and TALLY_APP set another build directory and app path, for parallel builds.
 # TALLY_UNIVERSAL=1 builds for Apple silicon and Intel in one binary, as releases do.
+# TALLY_SIGNING_IDENTITY signs with that certificate instead of ad hoc, as releases do.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -11,6 +12,12 @@ SCRATCH="${TALLY_SCRATCH_PATH:-.build}"
 # The .noindex folder keeps test builds out of Spotlight, so only the installed copy shows up there.
 APP="${TALLY_APP:-build.noindex/Tally.app}"
 HELPER_LABEL="io.github.dheerajkoppu.tally.fanhelper"
+# Apple only notarizes code with the hardened runtime and, under a real certificate, a secure timestamp.
+SIGNING_IDENTITY="${TALLY_SIGNING_IDENTITY:--}"
+SIGNING_OPTIONS=(--force --sign "$SIGNING_IDENTITY" --options runtime)
+if [ "$SIGNING_IDENTITY" != "-" ]; then
+    SIGNING_OPTIONS+=(--timestamp)
+fi
 # macOS ships bash 3.2, where an empty array trips set -u, hence the ${...+...} expansions below.
 ARCHITECTURES=()
 if [ "${TALLY_UNIVERSAL:-0}" = "1" ]; then
@@ -54,9 +61,9 @@ for BINARY in "$APP/Contents/MacOS/Tally" "$APP/Contents/Library/LaunchServices/
     xcrun vtool -set-build-version macos 15.0 "$SDK_VERSION" -replace -output "$BINARY" "$BINARY"
 done
 # Nested code is signed first so the app's signature seals it.
-codesign --force --sign - --identifier "$HELPER_LABEL" --options runtime "$APP/Contents/Library/LaunchServices/$HELPER_LABEL"
+codesign "${SIGNING_OPTIONS[@]}" --identifier "$HELPER_LABEL" "$APP/Contents/Library/LaunchServices/$HELPER_LABEL"
 # The app refuses to install a fan helper whose hash doesn't match this one, sealed in by the app's signature.
 HELPER_SHA256="$(shasum -a 256 "$APP/Contents/Library/LaunchServices/$HELPER_LABEL" | cut -d ' ' -f 1)"
 /usr/libexec/PlistBuddy -c "Add :TallyFanHelperSHA256 string $HELPER_SHA256" "$APP/Contents/Info.plist"
-codesign --force --sign - --entitlements Resources/Tally.entitlements "$APP"
+codesign "${SIGNING_OPTIONS[@]}" --entitlements Resources/Tally.entitlements "$APP"
 echo "Built $APP"

@@ -106,7 +106,9 @@ Maintainers bump `CFBundleShortVersionString` and `CFBundleVersion` in `Resource
 ./scripts/package-release.sh
 ```
 
-It builds a universal app for Apple silicon and Intel, zips it to `dist/Tally.zip`, and prints the commands to tag and publish the release.
+It builds a universal app for Apple silicon and Intel, signs it with the maintainer's Developer ID certificate, has Apple notarize it so macOS opens it without a warning, zips it to `dist/Tally.zip`, and prints the commands to tag and publish the release.
+
+Packaging a fork? Set `TALLY_SIGNING_IDENTITY` to your own Developer ID certificate and `TALLY_NOTARY_PROFILE` to your `notarytool` keychain profile, or set `TALLY_SIGNING_IDENTITY=-` for an ad hoc build that skips notarization.
 
 ## Code of Conduct
 

@@ -45,7 +45,7 @@ swift build --product Tally               # just the app executable
 TALLY_UNIVERSAL=1 ./scripts/build-app.sh  # Apple silicon and Intel in one binary
 ```
 
-`build-app.sh` compiles the Icon Composer document in `Resources/AppIcon.icon` with `actool`, stamps both binaries with the real SDK version so macOS 26 and later draw the app in the current style, and signs the app and helper ad hoc. The `build.noindex` folder keeps test builds out of Spotlight.
+`build-app.sh` compiles the Icon Composer document in `Resources/AppIcon.icon` with `actool`, stamps both binaries with the real SDK version so macOS 26 and later draw the app in the current style, and signs the app and helper with the hardened runtime, ad hoc unless `TALLY_SIGNING_IDENTITY` names a certificate. The `build.noindex` folder keeps test builds out of Spotlight.
 
 `TALLY_SCRATCH_PATH` and `TALLY_APP` point a build at another build folder and app path, so several builds can run side by side.
 
