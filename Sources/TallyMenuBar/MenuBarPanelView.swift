@@ -28,6 +28,8 @@ public struct MenuBarPanelView: View {
         .padding(.top, PanelMetrics.padding)
         .padding(.bottom, 6)
         .frame(width: PanelMetrics.width)
+        // While the popover animates to a new tab's height, the content stays at the top instead of sliding to stay centred.
+        .frame(maxHeight: .infinity, alignment: .top)
         .onChange(of: tab) { _, newTab in
             PanelActions.lastTab = newTab
         }
