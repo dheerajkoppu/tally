@@ -28,13 +28,9 @@
 
 1. [Download **Tally.zip**](https://github.com/dheerajkoppu/tally/releases/latest/download/Tally.zip) from the latest release.
 2. Unzip it and drag **Tally** into your **Applications** folder.
-3. Open Tally. The first time, macOS says it can't check the app for malicious software, because Tally isn't signed with a paid Apple developer certificate. Click **Done**, then open **System Settings › Privacy & Security**, scroll down and click **Open Anyway**.
+3. Open Tally. The first time, macOS asks whether you want to open an app downloaded from the internet. Click **Open**.
 
-Prefer Terminal? This does the same as step 3:
-
-```bash
-xattr -dr com.apple.quarantine /Applications/Tally.app
-```
+Tally is signed with an Apple Developer ID and notarized, so Apple has checked every release for malicious software.
 
 Tally needs macOS 15 Sequoia or later and runs on both Apple silicon and Intel Macs. Sensor and power readings are richer on Apple silicon.
 

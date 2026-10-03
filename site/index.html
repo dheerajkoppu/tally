@@ -578,42 +578,6 @@
       details .answer p + p {
         margin-top: 12px;
       }
-      .code {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-top: 14px;
-        background: #171717;
-        color: #e5e5e5;
-        border-radius: 12px;
-        padding: 10px 10px 10px 16px;
-      }
-      .code code {
-        font:
-          14px/1.5 ui-monospace,
-          "SF Mono",
-          Menlo,
-          monospace;
-        overflow-x: auto;
-        white-space: nowrap;
-      }
-      .copy {
-        flex: none;
-        border: 0;
-        border-radius: 8px;
-        padding: 7px 12px;
-        font:
-          600 13px/1 "Poppins",
-          system-ui,
-          sans-serif;
-        cursor: pointer;
-        background: rgba(255, 255, 255, 0.14);
-        color: #fff;
-      }
-      .copy:hover {
-        background: rgba(255, 255, 255, 0.22);
-      }
       @media (max-width: 860px) {
         .faq-grid {
           grid-template-columns: 1fr;
@@ -1472,25 +1436,14 @@
               </div>
             </details>
             <details>
-              <summary>
-                Why does macOS warn me the first time I open it?
-              </summary>
+              <summary>Is Tally safe to open?</summary>
               <div class="answer">
                 <p>
-                  Tally isn't signed with a paid Apple developer certificate
-                  yet, so macOS can't check it for you. Click Done, then open
-                  System Settings › Privacy &amp; Security, scroll down and
-                  click Open Anyway. You only do this once.
+                  Yes. Tally is signed with an Apple Developer ID and
+                  notarized, so Apple has checked every release for malicious
+                  software. The first time you open it, macOS asks whether you
+                  want to open an app downloaded from the internet. Click Open.
                 </p>
-                <p>Prefer Terminal? This does the same thing:</p>
-                <div class="code">
-                  <code id="unquarantine"
-                    >xattr -dr com.apple.quarantine
-                    /Applications/Tally.app</code
-                  ><button class="copy" type="button" data-copy="unquarantine">
-                    Copy
-                  </button>
-                </div>
               </div>
             </details>
             <details>
@@ -1655,17 +1608,6 @@
     </footer>
 
     <script>
-      document.querySelectorAll("[data-copy]").forEach(function (button) {
-        button.addEventListener("click", function () {
-          var text = document.getElementById(button.dataset.copy).textContent;
-          navigator.clipboard.writeText(text).then(function () {
-            button.textContent = "Copied";
-            setTimeout(function () {
-              button.textContent = "Copy";
-            }, 1600);
-          });
-        });
-      });
       if ("IntersectionObserver" in window) {
         var observer = new IntersectionObserver(
           function (entries) {
