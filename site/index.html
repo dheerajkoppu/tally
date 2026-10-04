@@ -19,7 +19,7 @@
     />
     <meta
       name="theme-color"
-      content="#0f1012"
+      content="#1c1c1e"
       media="(prefers-color-scheme: dark)"
     />
     <meta property="og:type" content="website" />
@@ -39,53 +39,47 @@
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="apple-touch-icon" href="assets/icon-256.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
     <style>
       :root {
         --background: #ffffff;
-        --hero-background: #f5f7fa;
-        --foreground: #171717;
-        --muted: #525252;
-        --subtle: #737373;
-        --line: #e5e7eb;
-        --primary: #0071e3;
-        --primary-hover: #0062c4;
-        --highlight: #0071e3;
-        --button-dark: #171717;
-        --button-dark-hover: #2a2a2a;
+        --hero-background: #f5f5f7;
+        --foreground: #1d1d1f;
+        --muted: #6e6e73;
+        --subtle: #86868b;
+        --line: #e5e5ea;
+        --primary: #5856d6;
+        --primary-hover: #4947c2;
+        --highlight: #5856d6;
+        --button-dark: #1d1d1f;
+        --button-dark-hover: #323236;
         --frame: #ffffff;
-        --frame-bar: #f3f4f6;
-        --grid-line: #80808014;
+        --frame-bar: #f5f5f7;
+        --panel: #f5f5f7;
         --shadow:
-          0 1px 2px rgba(17, 24, 39, 0.05),
-          0 24px 48px -16px rgba(17, 24, 39, 0.18);
-        --fade: rgba(234, 239, 248, 0.55);
+          0 1px 2px rgba(17, 17, 26, 0.05),
+          0 24px 48px -16px rgba(17, 17, 26, 0.16);
+        --fade: rgba(245, 245, 247, 0.55);
       }
       @media (prefers-color-scheme: dark) {
         :root {
           color-scheme: dark;
-          --background: #0f1012;
-          --hero-background: #151619;
-          --foreground: #ededed;
-          --muted: #a3a3a3;
-          --subtle: #8a8a8a;
-          --line: #26272b;
-          --primary: #0071e3;
-          --primary-hover: #1a82f0;
-          --highlight: #4ba3ff;
-          --button-dark: #ededed;
+          --background: #1c1c1e;
+          --hero-background: #1c1c1e;
+          --foreground: #f5f5f7;
+          --muted: #a1a1a6;
+          --subtle: #86868b;
+          --line: #38383b;
+          --primary: #5e5ce6;
+          --primary-hover: #6b69f4;
+          --highlight: #8d8bff;
+          --button-dark: #f5f5f7;
           --button-dark-hover: #ffffff;
-          --frame: #1b1c1f;
-          --frame-bar: #232428;
-          --grid-line: #ffffff0d;
+          --frame: #2a2a2c;
+          --frame-bar: #323235;
+          --panel: #2a2a2c;
           --shadow:
-            0 1px 2px rgba(0, 0, 0, 0.5), 0 24px 60px -20px rgba(0, 0, 0, 0.8);
-          --fade: rgba(15, 16, 18, 0.6);
+            0 1px 2px rgba(0, 0, 0, 0.5), 0 24px 60px -20px rgba(0, 0, 0, 0.7);
+          --fade: rgba(28, 28, 30, 0.6);
         }
       }
       * {
@@ -105,10 +99,10 @@
         background: var(--background);
         color: var(--foreground);
         font:
-          18px/1.6 "Poppins",
-          -apple-system,
+          17px/1.55 -apple-system,
           BlinkMacSystemFont,
-          "Segoe UI",
+          "SF Pro Text",
+          "Helvetica Neue",
           system-ui,
           sans-serif;
         -webkit-font-smoothing: antialiased;
@@ -128,6 +122,7 @@
       h3 {
         margin: 0;
         font-weight: 700;
+        letter-spacing: -0.022em;
         text-wrap: balance;
       }
       p {
@@ -163,13 +158,13 @@
         align-items: center;
         gap: 10px;
         text-decoration: none;
-        font-size: 24px;
-        font-weight: 700;
-        letter-spacing: -0.01em;
+        font-size: 21px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
       }
       .logo img {
-        width: 38px;
-        height: 38px;
+        width: 34px;
+        height: 34px;
       }
       .menu {
         display: flex;
@@ -190,9 +185,9 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 20px;
+        padding: 8px 18px;
         border-radius: 999px;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 500;
         text-decoration: none;
         white-space: nowrap;
@@ -241,26 +236,12 @@
         position: absolute;
         inset: 0;
         z-index: -1;
-        background-color: var(--hero-background);
-        background-image:
-          linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-        background-size: 40px 40px;
-        -webkit-mask-image: radial-gradient(
-          ellipse 55% 50% at 50% 38%,
-          #000 60%,
-          transparent 100%
-        );
-        mask-image: radial-gradient(
-          ellipse 55% 50% at 50% 38%,
-          #000 60%,
-          transparent 100%
-        );
+        background: linear-gradient(to bottom, var(--hero-background), var(--background) 70%);
       }
       .hero h1 {
-        font-size: clamp(38px, 6vw, 62px);
-        line-height: 1.12;
-        letter-spacing: -0.02em;
+        font-size: clamp(38px, 6vw, 64px);
+        line-height: 1.08;
+        letter-spacing: -0.03em;
         max-width: 13em;
         margin: 0 auto;
       }
@@ -270,6 +251,8 @@
       .hero .subheading {
         max-width: 34em;
         margin: 20px auto 0;
+        font-size: 19px;
+        color: var(--muted);
       }
       .store-buttons {
         display: flex;
@@ -301,23 +284,20 @@
       }
       .store-button small {
         display: block;
-        font-size: 11px;
+        font-size: 12px;
         line-height: 1.3;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        opacity: 0.85;
+        opacity: 0.8;
       }
       .store-button strong {
         display: block;
-        font-size: 19px;
+        font-size: 18px;
         line-height: 1.25;
         font-weight: 600;
+        letter-spacing: -0.01em;
       }
       .store-button.primary {
         background: var(--primary);
         color: #fff;
-        box-shadow: 0 10px 24px -10px
-          color-mix(in srgb, var(--primary) 70%, transparent);
       }
       .store-button.primary:hover {
         background: var(--primary-hover);
@@ -356,7 +336,7 @@
       }
       .frame {
         background: var(--frame);
-        border-radius: 14px;
+        border-radius: 12px;
         overflow: hidden;
         box-shadow:
           var(--shadow),
@@ -409,9 +389,9 @@
         gap: 10px;
       }
       .facts strong {
-        font-size: 32px;
+        font-size: 30px;
         font-weight: 700;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.025em;
         font-variant-numeric: tabular-nums;
       }
       .facts span {
@@ -432,9 +412,9 @@
         order: 2;
       }
       .benefit h2 {
-        font-size: clamp(32px, 4.2vw, 46px);
-        line-height: 1.15;
-        letter-spacing: -0.015em;
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.1;
+        letter-spacing: -0.028em;
       }
       .benefit .lead {
         margin-top: 14px;
@@ -454,15 +434,16 @@
       }
       .bullets svg {
         flex: none;
-        width: 26px;
-        height: 26px;
+        width: 24px;
+        height: 24px;
         margin-top: 2px;
-        color: var(--foreground);
+        color: var(--highlight);
       }
       .bullets h3 {
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 600;
         line-height: 1.4;
+        letter-spacing: -0.01em;
       }
       .bullets p {
         margin-top: 2px;
@@ -472,7 +453,7 @@
       .benefit-media .frame { max-width: 520px; margin-inline: auto; }
       .benefit-media .frame.narrow {
         max-width: 380px;
-        border-radius: 20px;
+        border-radius: 16px;
       }
       @media (max-width: 860px) {
         .benefit-grid {
@@ -491,9 +472,9 @@
       .privacy h2,
       .faq-intro h2,
       .cta h2 {
-        font-size: clamp(30px, 4vw, 42px);
-        line-height: 1.15;
-        letter-spacing: -0.015em;
+        font-size: clamp(28px, 3.8vw, 40px);
+        line-height: 1.1;
+        letter-spacing: -0.028em;
       }
       .extras .bullets {
         grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
@@ -527,10 +508,9 @@
         gap: 48px;
       }
       .faq-intro .label {
-        font-size: 14px;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--muted);
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--highlight);
       }
       .faq-intro h2 {
         margin-top: 12px;
@@ -550,9 +530,10 @@
         align-items: center;
         justify-content: space-between;
         gap: 24px;
-        padding: 22px 4px;
-        font-size: 19px;
+        padding: 20px 4px;
+        font-size: 18px;
         font-weight: 600;
+        letter-spacing: -0.01em;
         cursor: pointer;
         list-style: none;
       }
@@ -591,30 +572,21 @@
       .cta-panel {
         position: relative;
         overflow: hidden;
-        border-radius: 28px;
+        border-radius: 20px;
         padding: clamp(40px, 7vw, 80px) 24px;
         text-align: center;
-        background: #0e1320;
-        color: #f5f5f5;
+        background: #1c1c1e;
+        color: #f5f5f7;
+        box-shadow: 0 0 0 1px #ffffff14;
       }
       .cta-panel::before {
         content: "";
         position: absolute;
         inset: 0;
-        opacity: 0.5;
-        background-image:
-          linear-gradient(to right, #ffffff10 1px, transparent 1px),
-          linear-gradient(to bottom, #ffffff10 1px, transparent 1px);
-        background-size: 40px 40px;
-        -webkit-mask-image: radial-gradient(
-          ellipse 60% 70% at 50% 50%,
-          #000 40%,
-          transparent 100%
-        );
-        mask-image: radial-gradient(
-          ellipse 60% 70% at 50% 50%,
-          #000 40%,
-          transparent 100%
+        background: radial-gradient(
+          ellipse 60% 70% at 50% 0%,
+          #5e5ce640,
+          transparent 70%
         );
       }
       .cta-panel > * {
@@ -628,17 +600,23 @@
       .cta-panel > p {
         margin: 14px auto 0;
         max-width: 30em;
-        color: #b3bccd;
+        color: #a1a1a6;
+      }
+      .cta-panel .store-button.primary {
+        background: #5e5ce6;
+      }
+      .cta-panel .store-button.primary:hover {
+        background: #6b69f4;
       }
       .cta-panel .store-button.dark {
-        background: #f5f5f5;
-        color: #0e1320;
+        background: #f5f5f7;
+        color: #1c1c1e;
       }
       .cta-panel .store-button.dark:hover {
         background: #ffffff;
       }
       .cta-panel .hero-note {
-        color: #8a93a6;
+        color: #86868b;
       }
 
       footer {
@@ -801,8 +779,8 @@
                 <img
                   src="assets/overview-light.png"
                   width="2160"
-                  height="1587"
-                  alt="Tally's Overview: CPU, memory, GPU, disk, network and battery, with memory and power broken down by app"
+                  height="1729"
+                  alt="Tally's Overview: CPU, memory, GPU, disk, network, battery, temperature, fans and devices, with memory and power broken down by app"
                 />
               </picture>
             </div>
@@ -832,7 +810,7 @@
                 />
                 <img
                   src="assets/memory-light.png"
-                  width="1240" height="1665" alt="Tally's Memory tab: memory in use over time and a list of apps ranked by memory, each with its process count"
+                  width="1240" height="1621" alt="Tally's Memory tab: memory in use over time and a list of apps ranked by memory, each with its process count"
                 />
               </picture>
             </div>
@@ -928,8 +906,8 @@
                 <img
                   src="assets/menu-bar-light.png"
                   width="760"
-                  height="1040"
-                  alt="The Tally menu bar panel: CPU, memory, network, disk, GPU and battery, and the busiest apps"
+                  height="1215"
+                  alt="The Tally menu bar panel: CPU, memory, network, disk, GPU, battery, temperature and fans as small cards, and the busiest apps"
                 />
               </picture>
             </div>
@@ -1022,7 +1000,7 @@
                 />
                 <img
                   src="assets/network-light.png"
-                  width="1240" height="1020" alt="Tally's Network tab: download speed over time, upload, weekly total, and Ethernet and Wi-Fi listed separately with their speeds and link rates"
+                  width="1240" height="1920" alt="Tally's Network tab: download speed over time, upload, weekly total, and Ethernet and Wi-Fi listed separately with their speeds and link rates"
                 />
               </picture>
             </div>
@@ -1105,6 +1083,100 @@
       </section>
 
       <section class="benefit flip">
+        <div class="container benefit-grid">
+          <div class="benefit-media reveal">
+            <div class="frame">
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  srcset="assets/sensors-dark.png"
+                />
+                <img
+                  src="assets/sensors-light.png"
+                  width="1240" height="1365" alt="Tally's Sensors tab: CPU and GPU temperature with their recent history, every temperature sensor with a meter, and the batteries of connected devices"
+                />
+              </picture>
+            </div>
+          </div>
+          <div class="reveal">
+            <h2>Every temperature, and the fans</h2>
+            <p class="lead">
+              One tab for how warm your Mac is running: the chip, the SSD, the
+              battery and the rest, with the fans right beside them.
+            </p>
+            <ul class="bullets">
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M14.25 14.46V4.5a2.25 2.25 0 1 0-4.5 0v9.96a4.13 4.13 0 1 0 4.5 0zM12 9v7.5"
+                  />
+                </svg>
+                <div>
+                  <h3>All the sensors</h3>
+                  <p>
+                    CPU and GPU with their recent history, then every other
+                    reading your Mac reports, each on its own meter.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="2.25" />
+                  <path
+                    d="M12 9.75c0-3 1.5-5.25 3.75-5.25 1.5 0 2.25 1.5 1.5 3-.75 1.5-3 2.25-5.25 2.25zM14.25 12c3 0 5.25 1.5 5.25 3.75 0 1.5-1.5 2.25-3 1.5-1.5-.75-2.25-3-2.25-5.25zM12 14.25c0 3-1.5 5.25-3.75 5.25-1.5 0-2.25-1.5-1.5-3 .75-1.5 3-2.25 5.25-2.25zM9.75 12c-3 0-5.25-1.5-5.25-3.75 0-1.5 1.5-2.25 3-1.5 1.5.75 2.25 3 2.25 5.25z"
+                  />
+                </svg>
+                <div>
+                  <h3>Fan control in place</h3>
+                  <p>
+                    Leave the fans to macOS, pick a preset, or hold a speed
+                    yourself, on the same tab as the temperatures.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="6" y="3" width="12" height="18" rx="6" />
+                  <path d="M12 7v3" />
+                </svg>
+                <div>
+                  <h3>Accessory batteries</h3>
+                  <p>
+                    Charge levels for connected Bluetooth headphones, mice and
+                    keyboards.
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="benefit">
         <div class="container benefit-grid">
           <div class="benefit-media reveal">
             <div class="frame">
@@ -1213,28 +1285,6 @@
                 aria-hidden="true"
               >
                 <path
-                  d="M14.25 14.46V4.5a2.25 2.25 0 1 0-4.5 0v9.96a4.13 4.13 0 1 0 4.5 0zM12 9v7.5"
-                />
-              </svg>
-              <div>
-                <h3>Temperatures and fans</h3>
-                <p>
-                  How hot the chip is running and how fast the fans spin, with
-                  optional manual fan control.
-                </p>
-              </div>
-            </li>
-            <li>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path
                   d="M21 10.5h.38c.62 0 1.12.5 1.12 1.13v2.25c0 .62-.5 1.12-1.12 1.12H21m-16.5 3.75h13.5A2.25 2.25 0 0 0 20.25 16.5v-9A2.25 2.25 0 0 0 18 5.25H4.5A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25zM6 9v6"
                 />
               </svg>
@@ -1256,15 +1306,14 @@
                 stroke-linejoin="round"
                 aria-hidden="true"
               >
-                <path
-                  d="M19.11 5.25a9.75 9.75 0 0 1 0 13.5M15.93 8.43a5.25 5.25 0 0 1 0 7.14M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.7-.51-1.93-1.36a9.8 9.8 0 0 1 0-5.28c.23-.85 1.05-1.36 1.93-1.36z"
-                />
+                <circle cx="12" cy="12" r="9" />
+                <path d="m8.25 12.5 2.5 2.5 5-5.5" />
               </svg>
               <div>
-                <h3>Volume per app</h3>
+                <h3>Matches Activity Monitor</h3>
                 <p>
-                  Turn one noisy app down without touching the others. Sound
-                  passes straight through.
+                  Memory used, app, wired, compressed and cached read the same
+                  as Apple's own figures.
                 </p>
               </div>
             </li>
@@ -1278,14 +1327,36 @@
                 stroke-linejoin="round"
                 aria-hidden="true"
               >
-                <rect x="6" y="3" width="12" height="18" rx="6" />
-                <path d="M12 7v3" />
+                <path
+                  d="M12 3.75c-4.5 0-8.25 2.4-8.25 4.5v7.5c0 2.1 3.75 4.5 8.25 4.5s8.25-2.4 8.25-4.5v-7.5c0-2.1-3.75-4.5-8.25-4.5zM3.75 8.25c0 2.1 3.75 4.5 8.25 4.5s8.25-2.4 8.25-4.5"
+                />
               </svg>
               <div>
-                <h3>Wireless accessories</h3>
+                <h3>SSD health</h3>
                 <p>
-                  Battery levels for connected Bluetooth headphones, mice and
-                  keyboards.
+                  Rated life left on your drive, and everything written to and
+                  read from it since it was new.
+                </p>
+              </div>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="m9 9 6 6m0-6-6 6" />
+              </svg>
+              <div>
+                <h3>Quit and force quit</h3>
+                <p>
+                  From any list of apps or processes, and never without your
+                  confirmation.
                 </p>
               </div>
             </li>
@@ -1483,7 +1554,7 @@
                   once for your password and installs a small helper that only
                   sets fan speeds. It puts every fan back to automatic when
                   Tally quits. It's optional, and you can remove it from the fan
-                  controls.
+                  card on the Sensors tab.
                 </p>
               </div>
             </details>
