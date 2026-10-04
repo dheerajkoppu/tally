@@ -20,7 +20,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/overview-dark.png">
-    <img src="docs/images/overview-light.png" width="860" alt="Tally's Overview tab showing CPU, memory, GPU, disk, network and battery, with the apps using the most">
+    <img src="docs/images/overview-light.png" width="860" alt="Tally's Overview tab showing CPU, memory, GPU, disk, network, battery, temperature and fans, with the apps using the most">
   </picture>
 </p>
 
@@ -37,15 +37,14 @@ Tally needs macOS 15 Sequoia or later and runs on both Apple silicon and Intel M
 ## What it does
 
 - **Apps, not processes.** Helper processes (renderers, GPU helpers, plugins, language servers) count toward the app that started them. One row per app, with its totals for CPU, memory, power, disk and network.
-- **Separate views for each part of your Mac.** CPU, memory, disk, network, GPU and battery, each with a live chart and a ranked list of the apps driving it.
+- **Separate views for each part of your Mac.** CPU, memory, disk, network, GPU and battery, each with a live chart and a ranked list of the apps driving it. Memory figures match Activity Monitor.
 - **A month of history.** Scroll back to see what was busy while you were away, and which apps were responsible. It all lives in a single local database.
 - **Alerts for runaway apps.** Get a heads-up when something pins the CPU, leaks memory, or won't stop writing to disk.
 - **Local servers by project.** Servers and listening ports are filed under the repo they run from. Forgotten ones that haven't done anything in days get flagged, with a stop button that asks before it acts.
 - **Menu bar monitor.** Choose a symbol, a live number, a mini chart or a stack of readings. Click it for the full picture.
 - **Every network connection.** Ethernet and Wi‑Fi each show their own speed when you're on both.
 - **SSD health.** How much rated life your drive has left, warnings it raises about itself, and everything written to and read from it since it was new.
-- **Heat, fans and accessories.** How hot the chip is running, how fast the fans spin, and charge levels for wireless accessories. Manual fan control if you want it.
-- **Volume per app.** Lower one noisy app without touching anything else.
+- **Sensors in one place.** Every temperature your Mac reports, how fast the fans spin, and charge levels for wireless accessories. Manual fan control sits right beside the readings if you want it.
 - **Quit and force quit.** From any list, and never without your confirmation.
 - **Snapshots.** Save or copy an image of your stats or the whole dashboard, in light or dark.
 
@@ -66,12 +65,11 @@ Tally only goes online when you choose **Check for Updates**, which asks GitHub 
 
 It asks for these permissions, and only when you use the feature that needs them:
 
-| Permission                      | Why                                                               |
-| ------------------------------- | ----------------------------------------------------------------- |
-| Notifications                   | Alerts about runaway apps                                         |
-| Bluetooth                       | Charge levels of wireless accessories                             |
-| Screen & System Audio Recording | Per-app volume. Audio passes straight through and is never saved. |
-| Administrator password          | Only if you install the optional fan-control helper               |
+| Permission             | Why                                                 |
+| ---------------------- | --------------------------------------------------- |
+| Notifications          | Alerts about runaway apps                           |
+| Bluetooth              | Charge levels of wireless accessories               |
+| Administrator password | Only if you install the optional fan-control helper |
 
 ## Updating
 

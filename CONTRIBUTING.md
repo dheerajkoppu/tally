@@ -19,7 +19,7 @@ cd tally
 open build.noindex/Tally.app
 ```
 
-Tally is a plain Swift package, so you can also open the folder in Xcode, or run `swift build` from Terminal. Some features (notifications, launch at login, the fan helper, per-app volume) only work when Tally runs as an app bundle, which is what `build-app.sh` makes.
+Tally is a plain Swift package, so you can also open the folder in Xcode, or run `swift build` from Terminal. Some features (notifications, launch at login, the fan helper) only work when Tally runs as an app bundle, which is what `build-app.sh` makes.
 
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) explains how the code is laid out and how data flows from the samplers to the views.
 
@@ -54,7 +54,6 @@ swift run probe-processes   # every process, grouped into apps
 swift run probe-sensors     # temperatures, fans, peripheral batteries
 swift run probe-history     # the 30-day history database
 swift run probe-projects    # dev servers and ports by project
-swift run probe-audio       # apps playing sound
 ```
 
 **The render harness** starts the real engine, waits, and writes PNGs of any screen in light and dark mode, without opening a window:
@@ -64,7 +63,7 @@ swift build --product Tally
 .build/debug/Tally --render overview,cpu,network,popover --out /tmp/tally-render --wait 6 --scheme both
 ```
 
-Screen names: `overview cpu memory disk network gpu battery projects popover settings welcome export mixer inspector`.
+Screen names: `overview cpu memory disk network gpu battery sensors projects popover settings welcome export inspector`. Add `--open-panel cpu` (or any tab name) to render that section of the menu bar panel as `popover`.
 
 **Snapshot mode** captures the real app windows, the menu bar item and panel, and Settings:
 
