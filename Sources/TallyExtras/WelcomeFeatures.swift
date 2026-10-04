@@ -9,11 +9,11 @@ struct WelcomeFeature {
 
     static let all: [WelcomeFeature] = [
         WelcomeFeature(symbol: Symbols.apps, tint: Palette.accent, title: "Apps, not processes", detail: "Helper processes add up under the app they work for."),
-        WelcomeFeature(symbol: "clock.arrow.circlepath", tint: Palette.memory, title: "30 days of history", detail: "Scroll back a month to see what was busy and which apps were responsible."),
+        WelcomeFeature(symbol: "clock.arrow.circlepath", tint: Palette.accent, title: "30 days of history", detail: "Scroll back a month to see what was busy and which apps were responsible."),
         WelcomeFeature(symbol: "bell.badge", tint: Palette.red, title: "Alerts for runaway apps", detail: "Heavy CPU, steadily growing memory, or lots of disk activity."),
-        WelcomeFeature(symbol: "menubar.rectangle", tint: Palette.cpu, title: "Right in the menu bar", detail: "Pick an icon, a number or a graph. Everything else is one click away."),
-        WelcomeFeature(symbol: TallyTab.projects.symbol, tint: Palette.projects, title: "Dev servers, by project", detail: "Listening ports grouped by folder, and idle servers pointed out."),
-        WelcomeFeature(symbol: Symbols.temperature, tint: Palette.network, title: "Temperatures, fans and volume", detail: "Sensors, AirPods batteries, and a volume slider for each app."),
+        WelcomeFeature(symbol: "menubar.rectangle", tint: Palette.accent, title: "Right in the menu bar", detail: "Pick an icon, a number or a graph. Everything else is one click away."),
+        WelcomeFeature(symbol: TallyTab.projects.symbol, tint: Palette.accent, title: "Dev servers, by project", detail: "Listening ports grouped by folder, and idle servers pointed out."),
+        WelcomeFeature(symbol: Symbols.temperature, tint: Palette.accent, title: "Temperatures and fans", detail: "Every sensor, fan speeds you can set, and AirPods batteries."),
     ]
 }
 
@@ -37,6 +37,6 @@ struct WelcomeFeatureTile: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, minHeight: 68, alignment: .topLeading)
-        .background(Palette.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(Palette.card, in: RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
     }
 }

@@ -26,9 +26,9 @@ enum InspectorMetric: String, CaseIterable, Identifiable {
 
     var tint: Color {
         switch self {
-        case .cpu: Palette.cpu
-        case .memory: Palette.memory
-        case .power: Palette.battery
+        case .cpu: Palette.accent
+        case .memory: Palette.accent
+        case .power: Palette.accent
         }
     }
 

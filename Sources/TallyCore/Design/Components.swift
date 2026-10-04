@@ -21,7 +21,8 @@ public struct Card<Content: View>: View {
     }
 }
 
-/// A tinted square with an SF Symbol, used in card headers and stat tiles. Decorative, so hidden from VoiceOver.
+/// An SF Symbol on a quiet rounded square, used beside row titles and on the welcome tiles.
+/// Decorative, so hidden from VoiceOver.
 public struct IconBadge: View, Equatable {
     private let symbol: String
     private let tint: Color
@@ -35,34 +36,33 @@ public struct IconBadge: View, Equatable {
 
     public var body: some View {
         Image(systemName: symbol)
-            .font(.system(size: size * 0.52, weight: .semibold))
-            .foregroundStyle(tint)
+            .font(.system(size: size * 0.5, weight: .medium))
+            .foregroundStyle(LegibleTint(tint, on: Palette.cardHighlight))
             .frame(width: size, height: size)
-            .background(tint.opacity(0.16), in: RoundedRectangle(cornerRadius: size * 0.32, style: .continuous))
+            .background(Palette.cardHighlight, in: RoundedRectangle(cornerRadius: size * 0.28, style: .continuous))
             .accessibilityHidden(true)
     }
 }
 
-/// Badge, tinted title and an optional chevron, as on the Overview cards.
+/// A grey symbol and title, with an optional chevron, at the top of every card.
 public struct CardHeader: View, Equatable {
     private let title: String
     private let symbol: String
-    private let tint: Color
     private let showsChevron: Bool
 
-    public init(_ title: String, symbol: String, tint: Color, showsChevron: Bool = false) {
+    public init(_ title: String, symbol: String, showsChevron: Bool = false) {
         self.title = title
         self.symbol = symbol
-        self.tint = tint
         self.showsChevron = showsChevron
     }
 
     public var body: some View {
-        HStack(spacing: 9) {
-            IconBadge(symbol, tint: tint)
+        HStack(spacing: 6) {
+            Image(systemName: symbol)
+                .font(Typography.cardSymbol)
+                .accessibilityHidden(true)
             Text(title)
                 .font(Typography.cardTitle)
-                .foregroundStyle(LegibleTint(tint))
                 .lineLimit(1)
             Spacer(minLength: 0)
             if showsChevron {
@@ -73,12 +73,14 @@ public struct CardHeader: View, Equatable {
                     .accessibilityHidden(true)
             }
         }
+        .foregroundStyle(Palette.ink2)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }
 }
 
-/// A large rounded number with a smaller, lighter unit: "69 %", "53.88 GB". Changes without animation.
+/// A large bold number with its unit: "69%" and "58°" as one figure, "53.88 GB" with a smaller, lighter unit.
+/// Changes without animation.
 public struct BigFigure: View, Equatable {
     private let figure: Figure
     private let size: CGFloat
@@ -94,12 +96,12 @@ public struct BigFigure: View, Equatable {
     }
 
     public var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: size * 0.12) {
-            Text(figure.value)
+        HStack(alignment: .firstTextBaseline, spacing: figure.joinsUnit ? 0 : size * 0.14) {
+            Text(figure.joinsUnit ? figure.value + figure.unit : figure.value)
                 .font(Typography.figure(size))
-                .tracking(-size * 0.02)
+                .tracking(-size * 0.015)
                 .foregroundStyle(Palette.ink)
-            if !figure.unit.isEmpty {
+            if !figure.unit.isEmpty, !figure.joinsUnit {
                 Text(figure.unit)
                     .font(Typography.figureUnit(size * 0.5))
                     .foregroundStyle(Palette.ink2)
@@ -108,6 +110,42 @@ public struct BigFigure: View, Equatable {
         .lineLimit(1)
         .minimumScaleFactor(0.6)
         .accessibilityReading(figure.text)
+    }
+}
+
+/// A small grey tag with a quiet label and a bold value: "Charging 58m", or a value alone: "Macintosh HD".
+public struct Chip: View, Equatable {
+    private let label: String?
+    private let value: String
+    private let dot: Color?
+
+    /// - Parameter dot: a status colour shown before the text, such as memory pressure.
+    public init(_ label: String? = nil, value: String, dot: Color? = nil) {
+        self.label = label
+        self.value = value
+        self.dot = dot
+    }
+
+    public var body: some View {
+        HStack(spacing: 4) {
+            if let dot {
+                Circle().fill(dot).frame(width: 6, height: 6)
+            }
+            if let label {
+                Text(label)
+                    .font(Typography.chipLabel)
+                    .foregroundStyle(Palette.ink2)
+            }
+            Text(value)
+                .font(Typography.chipValue)
+                .foregroundStyle(Palette.ink)
+        }
+        .lineLimit(1)
+        .fixedSize()
+        .padding(.horizontal, 6)
+        .frame(height: 18)
+        .background(Palette.cardHighlight, in: RoundedRectangle(cornerRadius: Metrics.chipRadius, style: .continuous))
+        .accessibilityReading(label ?? "", value: value)
     }
 }
 
@@ -305,7 +343,7 @@ public enum PillStyle {
     case solid
 }
 
-/// A small rounded label with an optional symbol.
+/// A small tag in a status colour, with an optional symbol.
 public struct Pill: View, Equatable {
     private let text: String
     private let symbol: String?
@@ -332,9 +370,9 @@ public struct Pill: View, Equatable {
         }
         .lineLimit(1)
         .foregroundStyle(foreground)
-        .padding(.horizontal, fontSize * 0.75)
-        .padding(.vertical, fontSize * 0.3)
-        .background(background, in: Capsule())
+        .padding(.horizontal, fontSize * 0.6)
+        .padding(.vertical, fontSize * 0.28)
+        .background(background, in: RoundedRectangle(cornerRadius: Metrics.chipRadius, style: .continuous))
         .accessibilityReading(text)
     }
 

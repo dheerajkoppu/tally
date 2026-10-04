@@ -148,6 +148,7 @@ func makeSnapshot(at time: TimeInterval, random: inout SplitMix) -> (SystemSnaps
     snapshot.memory.appBytes = UInt64((22 + 10 * load) * 1_073_741_824)
     snapshot.memory.wiredBytes = UInt64(5.4 * 1_073_741_824)
     snapshot.memory.compressedBytes = UInt64((3 + 6 * load) * 1_073_741_824)
+    snapshot.memory.usedBytes = snapshot.memory.appBytes + snapshot.memory.wiredBytes + snapshot.memory.compressedBytes
     snapshot.gpu.utilizationPercent = min(100, 5 + 40 * load * random.next() + (random.next() > 0.97 ? 40 : 0))
     snapshot.battery.hasBattery = true
     let secondOfDay = (time + timeZoneOffset).truncatingRemainder(dividingBy: 86400)

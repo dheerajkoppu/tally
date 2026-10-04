@@ -45,20 +45,14 @@ public struct MenuBarPanelView: View {
         case .network: NetworkPanel()
         case .gpu: GPUPanel()
         case .battery: BatteryPanel()
+        case .sensors: SensorsPanel()
         case .projects: ProjectsPanel()
         }
     }
 }
 
-extension TallyTab {
-    /// The tab's tint in the panel; Overview follows the user's accent colour.
-    var panelTint: Color {
-        self == .overview ? Color.accentColor : tint
-    }
-}
-
-/// Eight icon-only tabs; the selected one sits on a faint wash of its tint.
-/// Command-1 to Command-8 pick a tab, and the arrow keys move between tabs when the strip has focus.
+/// An icon-only tab per section; the selected one sits on a faint wash of the accent.
+/// Command-1 to Command-9 pick a tab, and the arrow keys move between tabs when the strip has focus.
 struct PanelTabStrip: View {
     @Binding var selection: TallyTab
     @Namespace private var selectionNamespace
@@ -73,7 +67,7 @@ struct PanelTabStrip: View {
             }
         }
         .padding(3)
-        .background(Palette.card, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(Palette.card, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: selection)
         .onMoveCommand { direction in
             let tabs = TallyTab.allCases
@@ -108,8 +102,8 @@ private struct PanelTabButton: View {
                 .frame(height: 26.5)
                 .background {
                     if isSelected {
-                        RoundedRectangle(cornerRadius: 9, style: .continuous)
-                            .fill(tab.panelTint.opacity(selectionWash))
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .fill(tab.tint.opacity(selectionWash))
                             .matchedGeometryEffect(id: "selection", in: namespace)
                     }
                 }
@@ -124,11 +118,11 @@ private struct PanelTabButton: View {
     }
 
     private var selectionWash: Double {
-        contrast == .increased ? 0.24 : 0.15
+        contrast == .increased ? 0.30 : 0.20
     }
 
     private var foreground: AnyShapeStyle {
-        if isSelected { return AnyShapeStyle(LegibleTint(tab.panelTint, wash: selectionWash)) }
+        if isSelected { return AnyShapeStyle(LegibleTint(tab.tint, wash: selectionWash)) }
         return AnyShapeStyle(isHovered || contrast == .increased ? Palette.ink : Palette.ink2)
     }
 }

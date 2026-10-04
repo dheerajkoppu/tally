@@ -9,24 +9,40 @@ struct OverviewStatContent: Identifiable, Equatable {
     var id: String { label }
 }
 
-struct OverviewPillContent: Equatable {
-    var text: String
-    var symbol: String
-    var tint: Color
+struct OverviewChipContent: Equatable {
+    var label: String?
+    var value: String
+    /// A status colour before the text, such as memory pressure.
+    var dot: Color?
+}
+
+/// What a card draws beside its figure.
+enum OverviewVisual: Equatable {
+    case none
+    /// One column per core, each a share of full load.
+    case cores([Double])
+    case ring([RingGauge.Segment])
+    case battery(level: Double, isCharging: Bool, isLow: Bool)
+    case thermometer(level: Double, isHot: Bool)
+    /// A second, smaller figure, as upload is beside download.
+    case figure(symbol: String, Figure, label: String)
 }
 
 struct OverviewMetricContent: Equatable {
     var tab: TallyTab
     var title: String
     var symbol: String
-    var tint: Color
-    var caption: String
+    /// The grey line under the figure.
+    var detail: String
     /// nil before the first sample.
     var figure: Figure?
-    var pill: OverviewPillContent?
+    var chips: [OverviewChipContent] = []
+    var visual: OverviewVisual = .none
     var stats: [OverviewStatContent]
     /// Bar heights as fractions of the sparkline, rounded to what a pixel can show.
     var bars: [Double]
+    /// A second series stacked on the first, as system CPU is on user CPU.
+    var stackedBars: [Double]?
     /// What VoiceOver reads for the card: "12% now, average 9% and peak 31% over the last 4 min. User 8%, …".
     var spokenSummary: String
     /// The sparkline's data for VoiceOver's chart description, built only when asked for.
@@ -49,20 +65,27 @@ struct OverviewBreakdownContent: Equatable {
     var tab: TallyTab
     var title: String
     var symbol: String
-    var tint: Color
     var centerTitle: String
     var centerSubtitle: String
     var entries: [OverviewBreakdownEntry]
 }
 
-struct OverviewSensorContent: Identifiable, Equatable {
+struct OverviewFanContent: Identifiable, Equatable {
+    var id: Int
+    var name: String
+    /// "2,310 rpm", or "Off".
+    var speed: String
+    /// Where the speed sits between the fan's slowest and fastest, 0...1.
+    var fraction: Double
+}
+
+struct OverviewDeviceContent: Identifiable, Equatable {
     var id: String
+    var name: String
     var symbol: String
-    var tint: Color
-    var value: String
-    var caption: String
-    var accessibilityLabel: String
-    var opensFanControl = false
+    var percent: String
+    var level: Double
+    var isLow: Bool
 }
 
 struct OverviewAlertContent: Identifiable, Equatable {
@@ -79,7 +102,7 @@ struct OverviewAlertContent: Identifiable, Equatable {
 @MainActor
 struct OverviewContent {
     static let placeholder = "—"
-    static let sparklineCount = 44
+    static let sparklineCount = 96
     static let appSliceCount = 4
 
     let cpu: OverviewMetricContent
@@ -91,7 +114,10 @@ struct OverviewContent {
     let memoryByType: OverviewBreakdownContent
     let memoryByApp: OverviewBreakdownContent
     let powerByApp: OverviewBreakdownContent
-    let sensors: [OverviewSensorContent]
+    /// nil on Macs that report no temperature.
+    let temperature: OverviewMetricContent?
+    let fans: [OverviewFanContent]
+    let devices: [OverviewDeviceContent]
     let alerts: [OverviewAlertContent]
 
     init(store: TallyStore, temperatureUnit: TemperatureUnit) {
@@ -107,7 +133,7 @@ struct OverviewContent {
         func text(_ figure: Figure) -> String { hasSample ? figure.text : Self.placeholder }
         func historyText(_ figure: Figure) -> String { hasSample && hasHistory ? figure.text : Self.placeholder }
         func series(_ metric: HistoryMetric) -> [Double] {
-            hasSample ? live.recent(metric, count: Self.sparklineCount) : []
+            hasSample ? Array(live.values(for: metric).suffix(Self.sparklineCount)) : []
         }
         /// "average 9% and peak 31% over the last 4 min", from the samples the sparkline shows.
         func trend(_ values: ArraySlice<Double>, _ unit: ChartUnit) -> String? {
@@ -128,8 +154,8 @@ struct OverviewContent {
 
         let cpuStats = snapshot.cpu
         let cpuStatList = [
-            OverviewStatContent(label: "User", value: text(Format.percent(cpuStats.userPercent))),
-            OverviewStatContent(label: "System", value: text(Format.percent(cpuStats.systemPercent))),
+            OverviewStatContent(label: "User", value: text(Format.percent(cpuStats.userPercent)), dot: Palette.accent),
+            OverviewStatContent(label: "System", value: text(Format.percent(cpuStats.systemPercent)), dot: Palette.accentSecond),
             OverviewStatContent(label: "Average Today", value: historyText(Format.percent(totals.cpuAverageToday))),
         ]
         let cpuTrend = trend(recent(.cpu), .percent)
@@ -138,11 +164,13 @@ struct OverviewContent {
             tab: .cpu,
             title: "CPU",
             symbol: TallyTab.cpu.symbol,
-            tint: Palette.cpu,
-            caption: "Now",
+            detail: hasSample && !cpuStats.chipName.isEmpty ? cpuStats.chipName : "Processor",
             figure: hasSample ? Format.percent(cpuStats.totalPercent) : nil,
+            chips: hasSample ? [OverviewChipContent(label: "Load", value: String(format: "%.2f", cpuStats.loadAverage.first ?? 0))] : [],
+            visual: .cores(Self.bars(cpuStats.perCorePercent, top: 100)),
             stats: cpuStatList,
-            bars: cpuBars,
+            bars: hasSample ? Self.bars(Array(live.cpuUser.suffix(Self.sparklineCount)), top: 100) : [],
+            stackedBars: hasSample ? Self.bars(Array(live.cpuSystem.suffix(Self.sparklineCount)), top: 100) : nil,
             spokenSummary: spoken("\(Format.percent(cpuStats.totalPercent).text) now", trend: cpuTrend, stats: cpuStatList),
             chart: chart("CPU usage", bars: cpuBars, top: 100, unit: .percent, trend: cpuTrend)
         )
@@ -158,14 +186,22 @@ struct OverviewContent {
         let memoryTop = memoryStats.totalBytes > 0 ? Double(memoryStats.totalBytes) : Self.top(memorySeries)
         let memoryTrend = trend(recent(.memory), .memory)
         let memoryBars = Self.bars(memorySeries, top: memoryTop)
+        let memoryTotal = Double(max(memoryStats.totalBytes, 1))
         memory = OverviewMetricContent(
             tab: .memory,
             title: "Memory",
             symbol: TallyTab.memory.symbol,
-            tint: Palette.memory,
-            caption: hasSample && installed != nil ? "In Use of \(installed ?? "")" : "In Use",
+            detail: hasSample && installed != nil ? "in use of \(installed ?? "")" : "in use",
             figure: hasSample ? Format.memory(memoryStats.usedBytes) : nil,
-            pill: hasSample ? Self.pressurePill(memoryStats.pressure) : nil,
+            chips: hasSample ? [
+                OverviewChipContent(label: "Pressure", value: memoryStats.pressure.label, dot: memoryStats.pressure.tint),
+                OverviewChipContent(label: "Swap", value: Format.memory(memoryStats.swapUsedBytes).text),
+            ] : [],
+            visual: .ring([
+                RingGauge.Segment(Double(memoryStats.appBytes) / memoryTotal, color: Palette.memoryApp),
+                RingGauge.Segment(Double(memoryStats.wiredBytes) / memoryTotal, color: Palette.memoryWired),
+                RingGauge.Segment(Double(memoryStats.compressedBytes) / memoryTotal, color: Palette.memoryCompressed),
+            ]),
             stats: memoryStatList,
             bars: memoryBars,
             spokenSummary: spoken(
@@ -190,9 +226,9 @@ struct OverviewContent {
             tab: .gpu,
             title: "GPU",
             symbol: TallyTab.gpu.symbol,
-            tint: Palette.gpu,
-            caption: hasSample && !chipName.isEmpty ? chipName : "Graphics",
+            detail: hasSample && !chipName.isEmpty ? chipName : "Graphics",
             figure: hasSample ? Format.percent(gpuStats.utilizationPercent) : nil,
+            visual: .ring([RingGauge.Segment(gpuStats.utilizationPercent / 100)]),
             stats: gpuStatList,
             bars: gpuBars,
             spokenSummary: spoken("\(Format.percent(gpuStats.utilizationPercent).text) now", trend: gpuTrend, stats: gpuStatList),
@@ -201,7 +237,7 @@ struct OverviewContent {
 
         let diskStats = snapshot.disk
         let diskSeries: [Double] = hasSample
-            ? zip(live.recent(.diskRead, count: Self.sparklineCount), live.recent(.diskWrite, count: Self.sparklineCount)).map { $0 + $1 }
+            ? zip(live.diskRead.suffix(Self.sparklineCount), live.diskWrite.suffix(Self.sparklineCount)).map { $0 + $1 }
             : []
         let diskStatList = [
             OverviewStatContent(label: "Reading", value: text(Format.rate(diskStats.readBytesPerSecond))),
@@ -212,13 +248,15 @@ struct OverviewContent {
         let diskTrend = trend(diskSeries.suffix(min(recentDates.count, diskSeries.count)), .rate)
         let diskBars = Self.bars(diskSeries, top: diskTop)
         let diskTotal = diskStats.totalBytes > 0 ? " of \(Format.storage(diskStats.totalBytes).text)" : ""
+        let startupVolume = diskStats.volumes.first(where: \.isRoot)?.name
         disk = OverviewMetricContent(
             tab: .disk,
             title: "Disk",
             symbol: TallyTab.disk.symbol,
-            tint: Palette.disk,
-            caption: hasSample && diskStats.totalBytes > 0 ? "Free of \(Format.storage(diskStats.totalBytes).text)" : "Free",
+            detail: hasSample && diskStats.totalBytes > 0 ? "free of \(Format.storage(diskStats.totalBytes).text)" : "free",
             figure: hasSample ? Format.storage(diskStats.freeBytes) : nil,
+            chips: hasSample ? [startupVolume.map { OverviewChipContent(value: $0) }].compactMap { $0 } : [],
+            visual: .ring([RingGauge.Segment(diskStats.totalBytes > 0 ? Double(diskStats.usedBytes) / Double(diskStats.totalBytes) : 0)]),
             stats: diskStatList,
             bars: diskBars,
             spokenSummary: spoken("\(Format.storage(diskStats.freeBytes).text) free\(diskTotal)", trend: diskTrend.map { "activity \($0)" }, stats: diskStatList),
@@ -227,31 +265,29 @@ struct OverviewContent {
 
         let networkStats = snapshot.network
         let networkStatList = [
-            OverviewStatContent(label: "Uploading", value: text(Format.rate(networkStats.uploadBytesPerSecond))),
-            OverviewStatContent(label: "Downloaded Today", value: historyText(Format.total(totals.networkInToday))),
-            OverviewStatContent(label: "Downloaded in the Last 7 Days", value: historyText(Format.total(totals.networkInLast7Days))),
+            OverviewStatContent(label: "Today", value: historyText(Format.total(totals.networkInToday))),
+            OverviewStatContent(label: "Last 7 Days", value: historyText(Format.total(totals.networkInLast7Days))),
+            OverviewStatContent(label: "Last 30 Days", value: historyText(Format.total(totals.networkInLast30Days))),
         ]
         let networkSeries = series(.networkIn)
         let networkTop = Self.top(networkSeries, floor: 100_000)
         let networkTrend = trend(recent(.networkIn), .rate)
         let networkBars = Self.bars(networkSeries, top: networkTop)
+        let upload = Format.rate(networkStats.uploadBytesPerSecond)
         network = OverviewMetricContent(
             tab: .network,
             title: "Network",
             symbol: TallyTab.network.symbol,
-            tint: Palette.network,
-            caption: hasSample && !networkStats.isConnected ? "Not Connected" : "Downloading",
+            detail: hasSample && !networkStats.isConnected ? "not connected" : "downloading",
             figure: hasSample ? Format.rate(networkStats.downloadBytesPerSecond) : nil,
-            stats: [
-                OverviewStatContent(label: "Uploading", value: networkStatList[0].value),
-                OverviewStatContent(label: "Today", value: networkStatList[1].value),
-                OverviewStatContent(label: "Last 7 Days", value: networkStatList[2].value),
-            ],
+            chips: hasSample && networkStats.isConnected && !networkStats.interfaceKind.isEmpty ? [OverviewChipContent(value: networkStats.interfaceKind)] : [],
+            visual: hasSample ? .figure(symbol: "arrowtriangle.up.fill", upload, label: "Uploading") : .none,
+            stats: networkStatList,
             bars: networkBars,
             spokenSummary: spoken(
-                networkStats.isConnected ? "\(Format.rate(networkStats.downloadBytesPerSecond).text) downloading" : "Not connected",
+                networkStats.isConnected ? "\(Format.rate(networkStats.downloadBytesPerSecond).text) downloading, \(upload.text) uploading" : "Not connected",
                 trend: networkTrend,
-                stats: networkStatList
+                stats: networkStatList.map { OverviewStatContent(label: "Downloaded \($0.label)", value: $0.value) }
             ),
             chart: chart("Download speed", bars: networkBars, top: networkTop, unit: .rate, trend: networkTrend)
         )
@@ -263,7 +299,6 @@ struct OverviewContent {
             tab: .memory,
             title: "Memory by App",
             symbol: Symbols.apps,
-            tint: Palette.memory,
             apps: store.apps,
             metric: .memory,
             hasSample: hasSample,
@@ -273,14 +308,15 @@ struct OverviewContent {
             tab: .battery,
             title: "Power by App",
             symbol: Symbols.power,
-            tint: Palette.battery,
             apps: store.apps,
             metric: .power,
             hasSample: hasSample,
             format: { Format.power($0) }
         )
 
-        sensors = hasSample ? Self.sensorContent(snapshot.sensors, unit: temperatureUnit) : []
+        temperature = hasSample ? Self.temperatureContent(snapshot.sensors, unit: temperatureUnit, live: live, spanText: spanText, spacing: spacing) : nil
+        fans = hasSample ? Self.fanContent(snapshot.sensors.fans) : []
+        devices = hasSample ? Self.deviceContent(snapshot.sensors.peripheralBatteries) : []
         let now = Date()
         alerts = store.alerts.map { alert in
             OverviewAlertContent(alert: alert, tab: Self.tab(for: alert.kind), age: Self.age(since: alert.date, now: now))
@@ -334,10 +370,6 @@ struct OverviewContent {
         return Format.memory(bytes).text
     }
 
-    static func pressurePill(_ pressure: MemoryPressure) -> OverviewPillContent {
-        OverviewPillContent(text: pressure.label, symbol: pressure.symbol, tint: pressure.tint)
-    }
-
     static func tab(for kind: AlertKind) -> TallyTab {
         switch kind {
         case .highCPU: .cpu
@@ -382,8 +414,7 @@ struct OverviewContent {
                 tab: .battery,
                 title: "Power",
                 symbol: Symbols.power,
-                tint: Palette.battery,
-                caption: "Power Draw",
+                detail: "power draw",
                 figure: draw,
                 stats: stats,
                 bars: powerBars,
@@ -393,20 +424,21 @@ struct OverviewContent {
         }
 
         let caption: String
-        let timeStat: OverviewStatContent
+        var chips: [OverviewChipContent] = []
+        let time = battery.timeRemainingMinutes.flatMap { $0 > 0 ? Format.duration(minutes: $0) : nil }
         if battery.isCharging {
-            caption = "Charging"
-            timeStat = OverviewStatContent(label: "Until Full", value: text(battery.timeRemainingMinutes.map { Format.duration(minutes: $0) } ?? placeholder))
+            caption = "charging"
+            if let time { chips.append(OverviewChipContent(label: "Full in", value: time)) }
         } else if battery.isPluggedIn {
-            caption = "On Power Adapter"
-            timeStat = OverviewStatContent(label: "Cycles", value: text(battery.cycleCount > 0 ? battery.cycleCount.formatted() : placeholder))
+            caption = "on power adapter"
+            if let adapter = battery.adapterWatts, adapter > 0 { chips.append(OverviewChipContent(label: "Adapter", value: "\(adapter) W")) }
         } else {
-            caption = hasSample ? "On Battery" : "Battery"
-            timeStat = OverviewStatContent(label: "Remaining", value: text(battery.timeRemainingMinutes.map { Format.duration(minutes: $0) } ?? placeholder))
+            caption = hasSample ? "on battery" : "battery"
+            if let time { chips.append(OverviewChipContent(label: "Remaining", value: time)) }
         }
         let stats = [
-            timeStat,
             OverviewStatContent(label: "Power Draw", value: text(Format.power(battery.powerDrawWatts).text)),
+            OverviewStatContent(label: "Cycles", value: text(battery.cycleCount > 0 ? battery.cycleCount.formatted() : placeholder)),
             OverviewStatContent(label: "Health", value: text(battery.healthPercent > 0 ? Format.percent(battery.healthPercent).text : placeholder)),
         ]
         let batteryTrend = trend(recent(.battery), .percent)
@@ -415,12 +447,13 @@ struct OverviewContent {
             tab: .battery,
             title: "Battery",
             symbol: TallyTab.battery.symbol,
-            tint: Palette.battery,
-            caption: caption,
+            detail: caption,
             figure: hasSample ? Format.percent(battery.percent) : nil,
+            chips: hasSample ? chips : [],
+            visual: .battery(level: battery.percent / 100, isCharging: battery.isCharging, isLow: battery.percent <= 10 && !battery.isCharging),
             stats: stats,
             bars: batteryBars,
-            spokenSummary: spoken("\(Format.percent(battery.percent).text), \(caption.lowercased())", nil, batteryTrend, stats),
+            spokenSummary: spoken("\(Format.percent(battery.percent).text), \(caption)", chips.first.map { "\($0.label ?? "") \($0.value)" }, batteryTrend, stats),
             chart: chart("Battery level", batteryBars, 100, .percent, batteryTrend)
         )
     }
@@ -450,7 +483,6 @@ struct OverviewContent {
             tab: .memory,
             title: "Memory by Type",
             symbol: TallyTab.memory.symbol,
-            tint: Palette.cpu,
             centerTitle: hasSample && memory.totalBytes > 0 ? Format.percent(memory.usedFraction * 100).text : placeholder,
             centerSubtitle: "in use",
             entries: parts.map { label, bytes, color in
@@ -465,7 +497,7 @@ struct OverviewContent {
         )
     }
 
-    private static func appBreakdown(tab: TallyTab, title: String, symbol: String, tint: Color, apps: [AppUsage], metric: AppMetric, hasSample: Bool, format: (Double) -> Figure) -> OverviewBreakdownContent {
+    private static func appBreakdown(tab: TallyTab, title: String, symbol: String, apps: [AppUsage], metric: AppMetric, hasSample: Bool, format: (Double) -> Figure) -> OverviewBreakdownContent {
         let hasSample = hasSample && !apps.isEmpty
         let total = apps.reduce(0) { $0 + max($1.value(for: metric), 0) }
         let top = Array(apps.lazy.filter { $0.value(for: metric) > 0 }.sorted { $0.value(for: metric) > $1.value(for: metric) }.prefix(appSliceCount))
@@ -477,7 +509,7 @@ struct OverviewContent {
                 label: app.name,
                 share: share(app.value(for: metric), of: total),
                 valueText: format(app.value(for: metric)).text,
-                color: tint.opacity(1 - 0.17 * Double(index)),
+                color: Palette.accent.opacity(1 - 0.2 * Double(index)),
                 appID: app.id,
                 bundlePath: app.bundlePath ?? (app.kind == .tool ? app.processes.first?.executablePath : nil)
             )
@@ -489,31 +521,67 @@ struct OverviewContent {
             tab: tab,
             title: title,
             symbol: symbol,
-            tint: tint,
             centerTitle: hasSample ? format(total).text : placeholder,
             centerSubtitle: "all apps",
             entries: entries
         )
     }
 
-    private static func sensorContent(_ sensors: SensorStats, unit: TemperatureUnit) -> [OverviewSensorContent] {
-        var tiles: [OverviewSensorContent] = []
-        if let celsius = sensors.cpuTemperatureCelsius, celsius > 0 {
-            let value = Format.temperature(celsius, unit: unit).text
-            tiles.append(OverviewSensorContent(id: "cpu-temperature", symbol: Symbols.temperature, tint: Palette.projects, value: value, caption: "CPU", accessibilityLabel: "CPU temperature"))
+    /// The CPU temperature with its recent history, and up to three other sensors beside it.
+    private static func temperatureContent(_ sensors: SensorStats, unit: TemperatureUnit, live: LiveSeries, spanText: String, spacing: Double) -> OverviewMetricContent? {
+        guard let celsius = sensors.cpuTemperatureCelsius, celsius > 0 else { return nil }
+        let figure = Format.temperature(celsius, unit: unit)
+        let range = TemperatureRange(celsius: celsius)
+        let others = sensors.temperatures.filter { !$0.name.hasPrefix("CPU") && $0.celsius > 0 }
+        var stats = others.prefix(3).map { OverviewStatContent(label: $0.name, value: Format.temperature($0.celsius, unit: unit).text) }
+        if stats.isEmpty, let gpu = sensors.gpuTemperatureCelsius, gpu > 0 {
+            stats = [OverviewStatContent(label: "GPU", value: Format.temperature(gpu, unit: unit).text)]
         }
-        if let celsius = sensors.gpuTemperatureCelsius, celsius > 0 {
-            let value = Format.temperature(celsius, unit: unit).text
-            tiles.append(OverviewSensorContent(id: "gpu-temperature", symbol: Symbols.temperature, tint: Palette.projects, value: value, caption: "GPU", accessibilityLabel: "GPU temperature"))
+        let recentValues = live.cpuTemperature.suffix(sparklineCount).filter { $0 > 0 }
+        let series = bars(Array(live.cpuTemperature.suffix(sparklineCount)), top: TemperatureRange.scaleTop)
+        var trend: String?
+        if recentValues.count > 1, let peak = recentValues.max() {
+            let average = recentValues.reduce(0, +) / Double(recentValues.count)
+            trend = "average \(Format.temperature(average, unit: unit).text) and peak \(Format.temperature(peak, unit: unit).text) over the \(spanText)"
         }
-        for fan in sensors.fans {
-            let name = sensors.fans.count == 1 ? "Fan" : fan.name
-            let rpm = Int((fan.rpm / 10).rounded()) * 10
-            tiles.append(OverviewSensorContent(id: "fan-\(fan.id)", symbol: Symbols.fan, tint: Palette.cpu, value: rpm.formatted(), caption: "\(name), rpm", accessibilityLabel: "\(name) speed", opensFanControl: true))
+        return OverviewMetricContent(
+            tab: .sensors,
+            title: "Temperature",
+            symbol: Symbols.temperature,
+            detail: "CPU",
+            figure: figure,
+            chips: [OverviewChipContent(label: "Range", value: range.label, dot: range.statusTint)],
+            visual: .thermometer(level: TemperatureRange.level(celsius), isHot: range == .high),
+            stats: stats,
+            bars: series,
+            spokenSummary: spokenSummary(hasSample: true, figurePhrase: "CPU \(figure.text), \(range.label.lowercased())", pill: nil, trend: trend, stats: stats),
+            chart: SeriesChartDescriptor(title: "CPU temperature", summary: trend.map { $0.prefix(1).uppercased() + $0.dropFirst() } ?? "No samples yet", seriesName: "CPU temperature", fractions: series, scale: TemperatureRange.scaleTop, spacing: spacing, unit: .temperature(unit))
+        )
+    }
+
+    private static func fanContent(_ fans: [FanReading]) -> [OverviewFanContent] {
+        fans.map { fan in
+            let rpm = (fan.rpm / 10).rounded() * 10
+            let span = fan.maxRPM - fan.minRPM
+            return OverviewFanContent(
+                id: fan.id,
+                name: fans.count == 1 ? "Fan" : fan.name,
+                speed: fan.rpm >= 1 ? "\(Format.integer(rpm)) rpm" : "Off",
+                fraction: fan.rpm >= 1 && span > 0 ? min(max((fan.rpm - fan.minRPM) / span, 0.04), 1) : 0
+            )
         }
-        for peripheral in sensors.peripheralBatteries {
-            tiles.append(OverviewSensorContent(id: "peripheral-\(peripheral.id)", symbol: peripheral.kind.symbol, tint: Palette.battery, value: Format.percent(peripheral.percent).text, caption: peripheral.name, accessibilityLabel: "\(peripheral.name) battery"))
+    }
+
+    static func deviceContent(_ peripherals: [PeripheralBattery]) -> [OverviewDeviceContent] {
+        peripherals.map { peripheral in
+            OverviewDeviceContent(
+                id: peripheral.id,
+                name: peripheral.name,
+                symbol: peripheral.kind.symbol,
+                percent: Format.percent(peripheral.percent).text,
+                level: (peripheral.percent / 100 * 50).rounded() / 50,
+                isLow: peripheral.percent <= 20
+            )
         }
-        return tiles
     }
 }

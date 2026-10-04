@@ -2,7 +2,6 @@ import SwiftUI
 import TallyCore
 import TallyDashboard
 import TallyProjects
-import TallyAudio
 import TallyExtras
 import TallyFanControl
 
@@ -14,7 +13,7 @@ struct MainView: View {
     /// publishes a router change from inside a view update.
     @State private var selectedTab = AppRouter.shared.tab
 
-    /// Below this window width the eight tab titles no longer fit beside the toolbar buttons, so the tabs show icons.
+    /// Below this window width the nine tab titles no longer fit beside the toolbar button, so the tabs show icons.
     static let tabTitlesMinimumWidth: CGFloat = 940
 
     var body: some View {
@@ -36,26 +35,6 @@ struct MainView: View {
             ToolbarItem(placement: .principal) {
                 TabSwitcher(selection: $selectedTab, showsTitles: showsTabTitles)
             }
-            ToolbarItemGroup(placement: .primaryAction) {
-                Button {
-                    router.isMixerPresented.toggle()
-                } label: {
-                    Label("Volume Mixer", systemImage: "speaker.wave.2")
-                }
-                .help("Change the volume of each app")
-                .popover(isPresented: $router.isMixerPresented, arrowEdge: .bottom) {
-                    VolumeMixerView()
-                }
-                FanToolbarButton {
-                    router.isFanControlPresented.toggle()
-                }
-                .popover(isPresented: $router.isFanControlPresented, arrowEdge: .bottom) {
-                    FanControlView()
-                }
-            }
-            if #available(macOS 26, *) {
-                ToolbarSpacer(.fixed, placement: .primaryAction)
-            }
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     router.isExportPresented = true
@@ -73,12 +52,6 @@ struct MainView: View {
             if selectedTab != tab { selectedTab = tab }
         }
         .toolbar(removing: .title)
-        .onChange(of: router.isMixerPresented) { _, isPresented in
-            if isPresented { router.isFanControlPresented = false }
-        }
-        .onChange(of: router.isFanControlPresented) { _, isPresented in
-            if isPresented { router.isMixerPresented = false }
-        }
         // One sheet at a time: asking for one replaces the other rather than queueing behind it.
         .onChange(of: router.isExportPresented) { _, isPresented in
             if isPresented { router.inspectedAppID = nil }
@@ -103,6 +76,8 @@ struct MainView: View {
         switch router.tab {
         case .overview:
             OverviewView()
+        case .sensors:
+            SensorsView { FanControlView() }
         case .projects:
             ProjectsView()
         default:
@@ -165,21 +140,6 @@ private struct TabSwitcher: View {
         #else
         picker.pickerStyle(.segmented)
         #endif
-    }
-}
-
-/// Observes fan control on its own, so the rest of the toolbar never redraws for it.
-/// A filled fan marks fixed speeds, so the state does not rely on color.
-private struct FanToolbarButton: View {
-    @ObservedObject private var fans = FanController.shared
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Label("Fan Control", systemImage: fans.hasManualFans ? "fan.fill" : Symbols.fan)
-        }
-        .help(fans.hasManualFans ? "Fans are at a fixed speed. Click to change." : "Control fan speeds")
-        .accessibilityValue(fans.hasManualFans ? "Manual" : "Automatic")
     }
 }
 

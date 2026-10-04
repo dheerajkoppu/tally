@@ -28,8 +28,6 @@
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>15.0</string>
-	<key>NSAudioCaptureUsageDescription</key>
-	<string>Tally changes the volume of each app. Nothing is recorded.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Tally shows the battery level of your AirPods, mouse and keyboard.</string>
 	<key>NSHighResolutionCapable</key>

@@ -18,6 +18,7 @@ public struct LiveSeries: Sendable {
     public var battery: [Double] = []
     public var power: [Double] = []
     public var cpuTemperature: [Double] = []
+    public var gpuTemperature: [Double] = []
 
     public init() {}
 
@@ -40,6 +41,7 @@ public struct LiveSeries: Sendable {
         push(&battery, snapshot.battery.percent)
         push(&power, snapshot.battery.powerDrawWatts)
         push(&cpuTemperature, snapshot.sensors.cpuTemperatureCelsius ?? 0)
+        push(&gpuTemperature, snapshot.sensors.gpuTemperatureCelsius ?? 0)
     }
 
     public func values(for metric: HistoryMetric) -> [Double] {

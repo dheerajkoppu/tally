@@ -41,9 +41,10 @@ public struct MemoryStats: Hashable, Sendable {
     public var swapUsedBytes: UInt64 = 0
     public var swapTotalBytes: UInt64 = 0
     public var pressure: MemoryPressure = .normal
+    /// Memory Used as Activity Monitor shows it: everything that is neither free nor a cached file. That is App, Wired
+    /// and Compressed, plus purgeable memory and the RAM macOS keeps out of its page counts.
+    public var usedBytes: UInt64 = 0
 
-    /// Memory Used as Activity Monitor defines it: App + Wired + Compressed.
-    public var usedBytes: UInt64 { appBytes + wiredBytes + compressedBytes }
     public var usedFraction: Double { totalBytes == 0 ? 0 : Double(usedBytes) / Double(totalBytes) }
 
     public init() {}
@@ -274,6 +275,31 @@ public struct TemperatureReading: Hashable, Sendable, Identifiable {
     public init(name: String, celsius: Double) {
         self.name = name
         self.celsius = celsius
+    }
+}
+
+/// How warm a chip runs, in words.
+public enum TemperatureRange: String, Hashable, Sendable {
+    case normal, moderate, high
+
+    /// The reading a full gauge or chart stands for.
+    public static let scaleTop: Double = 110
+
+    public init(celsius: Double) {
+        self = celsius < 55 ? .normal : (celsius < 85 ? .moderate : .high)
+    }
+
+    public var label: String {
+        switch self {
+        case .normal: "Normal"
+        case .moderate: "Moderate"
+        case .high: "High"
+        }
+    }
+
+    /// Where a reading sits on a gauge that runs from room temperature to `scaleTop`.
+    public static func level(_ celsius: Double) -> Double {
+        min(max((celsius - 20) / (scaleTop - 20), 0), 1)
     }
 }
 

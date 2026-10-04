@@ -25,9 +25,15 @@ public struct OverviewView: View {
                 OverviewBreakdownCard(content: content.memoryByType).equatable()
                 OverviewBreakdownCard(content: content.memoryByApp).equatable()
                 OverviewBreakdownCard(content: content.powerByApp).equatable()
-            }
-            if !content.sensors.isEmpty {
-                OverviewSensorTiles(tiles: content.sensors).equatable()
+                if let temperature = content.temperature {
+                    OverviewMetricCard(content: temperature).equatable()
+                }
+                if !content.fans.isEmpty {
+                    OverviewFansCard(fans: content.fans).equatable()
+                }
+                if !content.devices.isEmpty {
+                    OverviewDevicesCard(devices: content.devices).equatable()
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -40,6 +46,8 @@ struct OverviewCardGrid: Layout {
     var spacing: CGFloat
     var minimumColumnWidth: CGFloat
     var maximumColumns: Int
+    /// The gap between columns, when it differs from the gap between rows.
+    var columnSpacing: CGFloat?
 
     /// No alignment guides of its own. The default implementation places every card on each update to look for one.
     func explicitAlignment(of guide: HorizontalAlignment, in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGFloat? {
@@ -64,7 +72,7 @@ struct OverviewCardGrid: Layout {
             for column in 0..<columns {
                 let index = row * columns + column
                 guard index < subviews.count else { break }
-                let x = bounds.minX + CGFloat(column) * (columnWidth + spacing)
+                let x = bounds.minX + CGFloat(column) * (columnWidth + (columnSpacing ?? spacing))
                 subviews[index].place(at: CGPoint(x: x, y: y), anchor: .topLeading, proposal: ProposedViewSize(width: columnWidth, height: rowHeight))
             }
             y += rowHeight + spacing
@@ -73,7 +81,7 @@ struct OverviewCardGrid: Layout {
 
     private func resolvedWidth(_ proposal: ProposedViewSize) -> CGFloat {
         guard let width = proposal.width, width.isFinite else {
-            return minimumColumnWidth * CGFloat(maximumColumns) + spacing * CGFloat(maximumColumns - 1)
+            return minimumColumnWidth * CGFloat(maximumColumns) + (columnSpacing ?? spacing) * CGFloat(maximumColumns - 1)
         }
         return width
     }
@@ -87,7 +95,7 @@ struct OverviewCardGrid: Layout {
     }
 
     private func columnWidth(for width: CGFloat, columns: Int) -> CGFloat {
-        max(0, (width - spacing * CGFloat(columns - 1)) / CGFloat(columns))
+        max(0, (width - (columnSpacing ?? spacing) * CGFloat(columns - 1)) / CGFloat(columns))
     }
 
     private func rowHeights(width: CGFloat, subviews: Subviews) -> [CGFloat] {

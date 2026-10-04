@@ -96,6 +96,16 @@ enum MetricValueFormat: Hashable {
     /// "1.7 W"
     case power
 
+    /// The least a full meter stands for, so figures that round to nothing do not fill their meter.
+    var meterFloor: Double {
+        switch self {
+        case .percent, .appPercent: 1
+        case .rate: 10_000
+        case .power: 0.01
+        case .memory, .total: 0
+        }
+    }
+
     func text(_ value: Double) -> String {
         switch self {
         case .percent: Format.percent(value).text

@@ -114,12 +114,12 @@ struct InspectorFigureGrid: View, Equatable {
     private static func figures(app: AppUsage?, snapshot: SystemSnapshot) -> [InspectorFigure] {
         guard let app else {
             return [
-                InspectorFigure(id: "cpu", label: "CPU", symbol: TallyTab.cpu.symbol, tint: Palette.cpu, value: "—", detail: " "),
-                InspectorFigure(id: "memory", label: "Memory", symbol: TallyTab.memory.symbol, tint: Palette.memory, value: "—", detail: " "),
-                InspectorFigure(id: "power", label: "Power", symbol: Symbols.power, tint: Palette.battery, value: "—", detail: " "),
-                InspectorFigure(id: "disk", label: "Disk", symbol: TallyTab.disk.symbol, tint: Palette.disk, value: "—", detail: " "),
-                InspectorFigure(id: "network", label: "Network", symbol: TallyTab.network.symbol, tint: Palette.network, value: "—", detail: " "),
-                InspectorFigure(id: "gpu", label: "GPU", symbol: TallyTab.gpu.symbol, tint: Palette.gpu, value: "—", detail: " "),
+                InspectorFigure(id: "cpu", label: "CPU", symbol: TallyTab.cpu.symbol, tint: Palette.accent, value: "—", detail: " "),
+                InspectorFigure(id: "memory", label: "Memory", symbol: TallyTab.memory.symbol, tint: Palette.accent, value: "—", detail: " "),
+                InspectorFigure(id: "power", label: "Power", symbol: Symbols.power, tint: Palette.accent, value: "—", detail: " "),
+                InspectorFigure(id: "disk", label: "Disk", symbol: TallyTab.disk.symbol, tint: Palette.accent, value: "—", detail: " "),
+                InspectorFigure(id: "network", label: "Network", symbol: TallyTab.network.symbol, tint: Palette.accent, value: "—", detail: " "),
+                InspectorFigure(id: "gpu", label: "GPU", symbol: TallyTab.gpu.symbol, tint: Palette.accent, value: "—", detail: " "),
             ]
         }
         let threads = app.processes.reduce(0) { $0 + $1.threadCount }
@@ -131,32 +131,32 @@ struct InspectorFigureGrid: View, Equatable {
         let machineShare = Format.percent(app.cpuPercent / Double(cores)).text
         return [
             InspectorFigure(
-                id: "cpu", label: "CPU", symbol: TallyTab.cpu.symbol, tint: Palette.cpu,
+                id: "cpu", label: "CPU", symbol: TallyTab.cpu.symbol, tint: Palette.accent,
                 value: MetricTabContent.appPercent(app.cpuPercent),
                 detail: threads > 0 ? "\(Format.integer(Double(threads))) threads · \(machineShare) of Mac" : "\(machineShare) of the Mac"
             ),
             InspectorFigure(
-                id: "memory", label: "Memory", symbol: TallyTab.memory.symbol, tint: Palette.memory,
+                id: "memory", label: "Memory", symbol: TallyTab.memory.symbol, tint: Palette.accent,
                 value: Format.memory(app.memoryBytes).text,
                 detail: "\(Format.percent(memoryShare).text) of RAM"
             ),
             InspectorFigure(
-                id: "power", label: "Power", symbol: Symbols.power, tint: Palette.battery,
+                id: "power", label: "Power", symbol: Symbols.power, tint: Palette.accent,
                 value: Format.power(app.powerWatts).text,
                 detail: powerShare > 0 ? "\(Format.percent(min(powerShare, 100)).text) of the Mac's draw" : "Estimated"
             ),
             InspectorFigure(
-                id: "disk", label: "Disk", symbol: TallyTab.disk.symbol, tint: Palette.disk,
+                id: "disk", label: "Disk", symbol: TallyTab.disk.symbol, tint: Palette.accent,
                 value: Format.rate(diskTotal).text,
                 detail: "Read \(Format.rate(app.diskReadBytesPerSecond).text) · Write \(Format.rate(app.diskWriteBytesPerSecond).text)"
             ),
             InspectorFigure(
-                id: "network", label: "Network", symbol: TallyTab.network.symbol, tint: Palette.network,
+                id: "network", label: "Network", symbol: TallyTab.network.symbol, tint: Palette.accent,
                 value: Format.rate(networkTotal).text,
                 detail: "In \(Format.rate(app.networkInBytesPerSecond).text) · Out \(Format.rate(app.networkOutBytesPerSecond).text)"
             ),
             InspectorFigure(
-                id: "gpu", label: "GPU", symbol: TallyTab.gpu.symbol, tint: Palette.gpu,
+                id: "gpu", label: "GPU", symbol: TallyTab.gpu.symbol, tint: Palette.accent,
                 value: MetricTabContent.appPercent(app.gpuPercent),
                 detail: "Of the GPU"
             ),
@@ -179,12 +179,7 @@ struct InspectorFigureTile: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 8) {
-                IconBadge(figure.symbol, tint: figure.tint, size: 20)
-                Text(figure.label)
-                    .font(Typography.tileTitle)
-                    .foregroundStyle(Palette.ink2)
-            }
+            MetricTileHeader(symbol: figure.symbol, label: figure.label)
             Text(figure.value)
                 .font(Typography.figure(Typography.tileFigureSize))
                 .foregroundStyle(isDimmed ? Palette.ink2 : Palette.ink)
@@ -198,7 +193,7 @@ struct InspectorFigureTile: View {
         .minimumScaleFactor(0.8)
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .metricSurface(radius: 14)
+        .metricSurface()
         .accessibilityReading(figure.label, value: figure.detail.trimmingCharacters(in: .whitespaces).isEmpty ? figure.value : "\(figure.value), \(figure.detail)")
     }
 }

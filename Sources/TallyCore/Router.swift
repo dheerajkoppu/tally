@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 public enum TallyTab: String, CaseIterable, Identifiable, Sendable {
-    case overview, cpu, memory, disk, network, gpu, battery, projects
+    case overview, cpu, memory, disk, network, gpu, battery, sensors, projects
 
     public var id: String { rawValue }
 
@@ -15,6 +15,7 @@ public enum TallyTab: String, CaseIterable, Identifiable, Sendable {
         case .network: "Network"
         case .gpu: "GPU"
         case .battery: "Battery"
+        case .sensors: "Sensors"
         case .projects: "Projects"
         }
     }
@@ -29,8 +30,6 @@ public final class AppRouter: ObservableObject {
     /// The app whose processes are shown in the detail sheet, if any.
     @Published public var inspectedAppID: String?
     @Published public var isExportPresented = false
-    @Published public var isMixerPresented = false
-    @Published public var isFanControlPresented = false
 
     /// Installed by the app target.
     public var showMainWindow: () -> Void = {}

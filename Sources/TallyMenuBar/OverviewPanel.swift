@@ -1,7 +1,7 @@
 import SwiftUI
 import TallyCore
 
-/// Every metric on one screen, then the busiest apps.
+/// Every metric on one screen as a grid of small cards, then the busiest apps.
 struct OverviewPanel: View {
     let onSelect: (TallyTab) -> Void
 
@@ -31,229 +31,205 @@ struct OverviewPanel: View {
                     PanelAlertsCard(alerts: Array(store.alerts.prefix(2)))
                 }
                 HStack(spacing: 8) {
-                    cpuCard(snapshot)
-                    memoryCard(snapshot)
+                    cpuCard(snapshot.cpu)
+                    memoryCard(snapshot.memory)
                 }
                 HStack(spacing: 8) {
-                    networkCard(snapshot)
-                    diskCard(snapshot)
+                    networkCard(snapshot.network)
+                    diskCard(snapshot.disk)
                 }
                 HStack(spacing: 8) {
                     gpuCard(snapshot)
                     if snapshot.battery.hasBattery {
                         batteryCard(snapshot.battery)
                     } else {
-                        temperatureCard(snapshot.sensors)
+                        powerCard(snapshot.battery)
                     }
                 }
+                sensorRow(snapshot.sensors)
                 BusiestCard(apps: store.topApps(by: .cpu, limit: 3))
             }
             .padding(.top, 9)
         }
     }
 
-    private func cpuCard(_ snapshot: SystemSnapshot) -> some View {
-        let values = store.live.cpu.suffix(PanelMetrics.chartSamples)
-        return MiniCard(tab: .cpu, title: "CPU", onSelect: onSelect) {
-            FigureLine(Format.percent(snapshot.cpu.totalPercent)) {
-                Text(verbatim: "load \(String(format: "%.2f", snapshot.cpu.loadAverage.first ?? 0))")
-            }
-        } footer: {
-            PanelAreaChart(values, tint: Palette.cpu, maxValue: 100, summary: PanelChartSummary.text("CPU", current: Format.percent(snapshot.cpu.totalPercent).text, values: values) { Format.percent($0).text })
-                .frame(height: PanelMetrics.miniChartHeight)
+    private func cpuCard(_ cpu: CPUStats) -> some View {
+        MiniCard(tab: .cpu, title: "CPU", figure: Format.percent(cpu.totalPercent), detail: "load \(String(format: "%.2f", cpu.loadAverage.first ?? 0))", onSelect: onSelect) {
+            BarSparkline(cpu.perCorePercent, maxValue: 100, slot: .fill)
         }
     }
 
-    private func memoryCard(_ snapshot: SystemSnapshot) -> some View {
-        let memory = snapshot.memory
-        return MiniCard(tab: .memory, title: "Memory", onSelect: onSelect) {
-            FigureLine(Format.memory(memory.usedBytes)) {
-                Text(verbatim: "of \(PanelFormat.memoryCapacity(memory.totalBytes))")
-            }
-        } footer: {
-            let values = store.live.memoryUsed.suffix(PanelMetrics.chartSamples)
-            PanelAreaChart(values, tint: Palette.memory, maxValue: Double(max(memory.totalBytes, 1)), summary: PanelChartSummary.text("Memory", current: Format.memory(memory.usedBytes).text, values: values) { Format.memory(UInt64(max($0, 0))).text })
-                .frame(height: PanelMetrics.miniChartHeight)
+    private func memoryCard(_ memory: MemoryStats) -> some View {
+        let total = Double(max(memory.totalBytes, 1))
+        return MiniCard(tab: .memory, title: "Memory", figure: Format.memory(memory.usedBytes), detail: "of \(PanelFormat.memoryCapacity(memory.totalBytes))", onSelect: onSelect) {
+            RingGauge([
+                RingGauge.Segment(Double(memory.appBytes) / total, color: Palette.memoryApp),
+                RingGauge.Segment(Double(memory.wiredBytes) / total, color: Palette.memoryWired),
+                RingGauge.Segment(Double(memory.compressedBytes) / total, color: Palette.memoryCompressed),
+            ])
+            .frame(width: PanelMetrics.miniVisualSize.height)
         }
     }
 
-    private func networkCard(_ snapshot: SystemSnapshot) -> some View {
-        let network = snapshot.network
+    private func networkCard(_ network: NetworkStats) -> some View {
         let values = store.live.networkIn.suffix(PanelMetrics.chartSamples)
-        return MiniCard(tab: .network, title: "Network", onSelect: onSelect) {
-            HStack(alignment: .firstTextBaseline, spacing: 0) {
-                Image(systemName: Symbols.download)
-                    .font(.system(size: 10, weight: .medium))
-                    .panelSecondaryText()
-                    .accessibilityLabel("Download")
-                PanelFigure(Format.rate(network.downloadBytesPerSecond), size: 21)
-                    .padding(.leading, 6)
-                    .layoutPriority(1)
-                Spacer(minLength: 4)
-                HStack(spacing: 3) {
-                    Image(systemName: Symbols.upload)
-                        .font(.system(size: 9.5, weight: .medium))
-                        .accessibilityLabel("Upload")
-                    Text(Format.rate(network.uploadBytesPerSecond).text)
-                        .truncationMode(.tail)
-                }
-                .font(.system(size: 11))
-                .panelSecondaryText()
-                .lineLimit(1)
-            }
-        } footer: {
-            PanelAreaChart(values, tint: Palette.network, maxValue: PanelAreaChart.scale(values, floor: 10_000), summary: PanelChartSummary.text("Download", current: Format.rate(network.downloadBytesPerSecond).text, values: values) { Format.rate($0).text })
-                .frame(height: PanelMetrics.miniChartHeight)
+        return MiniCard(tab: .network, title: "Network", figure: Format.rate(network.downloadBytesPerSecond), detail: "↑ \(Format.rate(network.uploadBytesPerSecond).text)", accessibilityDetail: "uploading \(Format.rate(network.uploadBytesPerSecond).text)", onSelect: onSelect) {
+            PanelBarChart(values, maxValue: PanelBarChart.scale(values, floor: 10_000))
         }
     }
 
-    private func diskCard(_ snapshot: SystemSnapshot) -> some View {
-        let disk = snapshot.disk
+    private func diskCard(_ disk: DiskStats) -> some View {
         let usedFraction = disk.totalBytes == 0 ? 0 : Double(disk.usedBytes) / Double(disk.totalBytes)
-        return MiniCard(tab: .disk, title: "Disk", onSelect: onSelect) {
-            FigureLine(Format.storage(disk.freeBytes)) {
-                Text("free")
-            }
-        } footer: {
-            PanelMeter(usedFraction, tint: Palette.disk, height: 6)
+        return MiniCard(tab: .disk, title: "Disk", figure: Format.storage(disk.freeBytes), detail: "free", onSelect: onSelect) {
+            RingGauge(usedFraction)
+                .frame(width: PanelMetrics.miniVisualSize.height)
         }
     }
 
     private func gpuCard(_ snapshot: SystemSnapshot) -> some View {
         let values = store.live.gpu.suffix(PanelMetrics.chartSamples)
-        return MiniCard(tab: .gpu, title: "GPU", onSelect: onSelect) {
-            FigureLine(Format.percent(snapshot.gpu.utilizationPercent)) {
-                EmptyView()
-            }
-        } footer: {
-            PanelAreaChart(values, tint: Palette.gpu, maxValue: 100, summary: PanelChartSummary.text("GPU", current: Format.percent(snapshot.gpu.utilizationPercent).text, values: values) { Format.percent($0).text })
-                .frame(height: PanelMetrics.miniChartHeight)
+        return MiniCard(tab: .gpu, title: "GPU", figure: Format.percent(snapshot.gpu.utilizationPercent), detail: "\(Format.memory(snapshot.gpu.memoryUsedBytes).text) in use", onSelect: onSelect) {
+            PanelBarChart(values, maxValue: 100)
         }
     }
 
     private func batteryCard(_ battery: BatteryStats) -> some View {
-        MiniCard(tab: .battery, title: "Battery", onSelect: onSelect) {
-            FigureLine(Format.percent(battery.percent)) {
-                Text(BatteryText.remaining(battery))
-            }
-        } footer: {
-            PanelMeter(battery.percent / 100, tint: battery.percent <= 10 && !battery.isCharging ? Palette.red : Palette.battery, height: 6)
+        let isLow = battery.percent <= 10 && !battery.isCharging
+        return MiniCard(tab: .battery, title: "Battery", figure: Format.percent(battery.percent), detail: BatteryText.remaining(battery), onSelect: onSelect) {
+            BatteryGlyph(level: battery.percent / 100, isCharging: battery.isCharging, tint: isLow ? Palette.red : Palette.accent)
+                .frame(width: 24)
         }
     }
 
-    /// Macs without a battery show the CPU temperature in the battery's place, or the power draw without a sensor.
+    /// Macs without a battery show what the whole Mac draws in the battery's place.
+    private func powerCard(_ battery: BatteryStats) -> some View {
+        let values = store.live.power.suffix(PanelMetrics.chartSamples)
+        return MiniCard(tab: .battery, title: "Power", symbol: Symbols.power, figure: Format.power(battery.powerDrawWatts), detail: "whole Mac", onSelect: onSelect) {
+            PanelBarChart(values, maxValue: PanelBarChart.scale(values, floor: 10))
+        }
+    }
+
+    /// CPU temperature beside the fans, or beside a connected device on a Mac without fans.
     @ViewBuilder
-    private func temperatureCard(_ sensors: SensorStats) -> some View {
-        if let celsius = sensors.cpuTemperatureCelsius {
-            let values = store.live.cpuTemperature.suffix(PanelMetrics.chartSamples)
-            let unit = settings.temperatureUnit
-            let current = Format.temperature(celsius, unit: unit).text
-            MiniCard(tab: .battery, title: "Temperature", symbol: Symbols.temperature, tint: Palette.red, onSelect: onSelect) {
-                FigureLine(Figure(current, "")) {
-                    Text("CPU")
+    private func sensorRow(_ sensors: SensorStats) -> some View {
+        let temperature = sensors.cpuTemperatureCelsius.flatMap { $0 > 0 ? $0 : nil }
+        let fastestFan = sensors.fans.max { $0.rpm < $1.rpm }
+        let device = sensors.peripheralBatteries.min { $0.percent < $1.percent }
+        if temperature != nil || fastestFan != nil || device != nil {
+            HStack(spacing: 8) {
+                if let temperature {
+                    let range = TemperatureRange(celsius: temperature)
+                    MiniCard(tab: .sensors, title: "Temperature", figure: Format.temperature(temperature, unit: settings.temperatureUnit), detail: "CPU, \(range.label.lowercased())", onSelect: onSelect) {
+                        ThermometerGlyph(level: TemperatureRange.level(temperature), tint: range.tint)
+                            .frame(width: 30)
+                    }
                 }
-            } footer: {
-                PanelAreaChart(values, tint: Palette.red, maxValue: PanelAreaChart.scale(values, floor: 100), summary: PanelChartSummary.text("CPU temperature", current: current, values: values) { Format.temperature($0, unit: unit).text })
-                    .frame(height: PanelMetrics.miniChartHeight)
-            }
-        } else {
-            let values = store.live.power.suffix(PanelMetrics.chartSamples)
-            MiniCard(tab: .battery, title: "Power", symbol: Symbols.power, tint: Palette.battery, onSelect: onSelect) {
-                FigureLine(Format.power(store.snapshot.battery.powerDrawWatts)) {
-                    Text("whole Mac")
+                if let fan = fastestFan {
+                    let span = fan.maxRPM - fan.minRPM
+                    let isSpinning = fan.rpm >= 1
+                    MiniCard(
+                        tab: .sensors,
+                        title: sensors.fans.count == 1 ? "Fan" : "Fans",
+                        symbol: Symbols.fan,
+                        figure: isSpinning ? Figure(PanelFormat.integer((fan.rpm / 10).rounded() * 10), "rpm") : Figure("Off", ""),
+                        detail: sensors.fans.count == 1 ? "fan speed" : "fastest of \(sensors.fans.count)",
+                        onSelect: onSelect
+                    ) {
+                        FanGauge(fraction: isSpinning && span > 0 ? min(max((fan.rpm - fan.minRPM) / span, 0.04), 1) : 0)
+                            .frame(width: PanelMetrics.miniVisualSize.height)
+                    }
+                } else if let device {
+                    MiniCard(tab: .sensors, title: "Devices", symbol: device.kind.symbol, figure: Format.percent(device.percent), detail: device.name, onSelect: onSelect) {
+                        LevelTile(level: device.percent / 100, symbol: device.kind.symbol, tint: device.percent <= 20 ? Palette.red : Palette.accent)
+                            .frame(width: 34)
+                    }
                 }
-            } footer: {
-                PanelAreaChart(values, tint: Palette.battery, maxValue: PanelAreaChart.scale(values, floor: 10), summary: PanelChartSummary.text("Power", current: Format.power(store.snapshot.battery.powerDrawWatts).text, values: values) { Format.power($0).text })
-                    .frame(height: PanelMetrics.miniChartHeight)
             }
         }
     }
 }
 
-/// A big figure with a caption aligned to its baseline on the right.
-private struct FigureLine<Trailing: View>: View {
-    private let figure: Figure
-    private let trailing: Trailing
-
-    init(_ figure: Figure, @ViewBuilder trailing: () -> Trailing) {
-        self.figure = figure
-        self.trailing = trailing()
-    }
-
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 4) {
-            PanelFigure(figure, size: 21)
-                .layoutPriority(1)
-            Spacer(minLength: 4)
-            trailing
-                .font(.system(size: 11))
-                .panelSecondaryText()
-                .lineLimit(1)
-        }
-    }
-}
-
-/// One of the six small cards. Clicking it opens that metric's tab in the panel.
-private struct MiniCard<FigureContent: View, Footer: View>: View {
+/// One of the small cards: a grey title, a bold figure over a quiet detail line, and a gauge or chart on the right.
+/// Clicking it opens that section in the panel.
+private struct MiniCard<Visual: View>: View {
     let tab: TallyTab
     let title: String
     let symbol: String
-    let tint: Color
+    let figure: Figure
+    let detail: String
+    let accessibilityDetail: String
     let onSelect: (TallyTab) -> Void
-    let figure: FigureContent
-    let footer: Footer
+    let visual: Visual
 
     @State private var isHovered = false
     @Environment(\.colorSchemeContrast) private var contrast
 
-    init(tab: TallyTab, title: String, symbol: String? = nil, tint: Color? = nil, onSelect: @escaping (TallyTab) -> Void, @ViewBuilder figure: () -> FigureContent, @ViewBuilder footer: () -> Footer) {
+    init(tab: TallyTab, title: String, symbol: String? = nil, figure: Figure, detail: String, accessibilityDetail: String? = nil, onSelect: @escaping (TallyTab) -> Void, @ViewBuilder visual: () -> Visual) {
         self.tab = tab
         self.title = title
         self.symbol = symbol ?? tab.symbol
-        self.tint = tint ?? tab.tint
+        self.figure = figure
+        self.detail = detail
+        self.accessibilityDetail = accessibilityDetail ?? detail
         self.onSelect = onSelect
-        self.figure = figure()
-        self.footer = footer()
+        self.visual = visual()
     }
 
     var body: some View {
+        let shape = RoundedRectangle(cornerRadius: PanelMetrics.cardRadius, style: .continuous)
         Button {
             onSelect(tab)
         } label: {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 7) {
+                HStack(spacing: 5) {
                     Image(systemName: symbol)
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundStyle(tint)
-                        .frame(width: 14)
+                        .font(.system(size: 10.5, weight: .medium))
+                        .frame(width: 14, alignment: .leading)
                     Text(title)
-                        .font(.system(size: 11, weight: .medium))
-                        .panelSecondaryText()
+                        .font(.system(size: 11.5, weight: .semibold))
                 }
+                .panelSecondaryText()
                 .frame(height: 15)
-                figure
-                    .padding(.top, 3)
                 Spacer(minLength: 0)
-                footer
+                HStack(alignment: .bottom, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        PanelFigure(figure, size: 21)
+                        Text(detail)
+                            .font(.system(size: 11, weight: .medium))
+                            .monospacedDigit()
+                            .panelSecondaryText()
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                    .layoutPriority(1)
+                    Spacer(minLength: 0)
+                    visual
+                        .frame(maxWidth: PanelMetrics.miniVisualSize.width)
+                        .frame(height: PanelMetrics.miniVisualSize.height)
+                        .accessibilityHidden(true)
+                }
             }
-            .padding(.horizontal, 10)
-            .padding(.top, 8)
-            .padding(.bottom, 9.5)
+            .padding(.horizontal, 11)
+            .padding(.top, 9)
+            .padding(.bottom, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: 86)
-            .background(isHovered ? Palette.cardHighlight : Palette.card, in: RoundedRectangle(cornerRadius: PanelMetrics.cardRadius, style: .continuous))
+            .frame(height: 84)
+            .background(isHovered ? Palette.cardHighlight : Palette.card, in: shape)
             .overlay {
                 if contrast == .increased {
-                    RoundedRectangle(cornerRadius: PanelMetrics.cardRadius, style: .continuous).strokeBorder(Palette.ink3, lineWidth: 1)
+                    shape.strokeBorder(Palette.ink3, lineWidth: 1)
                 }
             }
-            .contentShape(RoundedRectangle(cornerRadius: PanelMetrics.cardRadius, style: .continuous))
+            .contentShape(shape)
         }
         .buttonStyle(.plain)
         .onHover { isHovered = $0 }
         .help("Show \(title)")
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue("\(figure.text), \(accessibilityDetail)")
         .accessibilityHint("Shows the \(tab.title) section")
+        .accessibilityAddTraits(.isButton)
     }
 }
 
@@ -263,11 +239,11 @@ private struct BusiestCard: View {
 
     var body: some View {
         if !apps.isEmpty {
-            PanelCard(horizontal: 16, top: 6, bottom: 9) {
+            PanelCard(horizontal: 12, top: 6, bottom: 8) {
                 PanelListTitle(title: "Busiest Apps", height: 25)
                 ForEach(apps.indices, id: \.self) { rank in
                     let app = apps[rank]
-                    PanelAppRow(app: app, fraction: 0, value: Format.precisePercent(app.cpuPercent), tint: Palette.cpu, valueWidth: 66, showsMeter: false) {
+                    PanelAppRow(app: app, fraction: 0, value: Format.precisePercent(app.cpuPercent), tint: Palette.accent, valueWidth: 66, showsMeter: false) {
                         PanelActions.openMainWindow(.cpu, inspecting: app.id)
                     }
                     .equatable()
@@ -282,11 +258,11 @@ private struct PanelAlertsCard: View {
     let alerts: [AlertItem]
 
     var body: some View {
-        PanelCard(horizontal: 14, top: 10, bottom: 10) {
+        PanelCard(horizontal: 12, top: 10, bottom: 10) {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.circle.fill")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Palette.projects)
+                    .foregroundStyle(Palette.caution)
                 Text("Worth a Look")
                     .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Palette.ink)

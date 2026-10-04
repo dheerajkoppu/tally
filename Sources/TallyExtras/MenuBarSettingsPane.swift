@@ -15,12 +15,12 @@ extension MenuBarMetric {
 
     var tint: Color {
         switch self {
-        case .cpu: Palette.cpu
-        case .memory: Palette.memory
-        case .gpu: Palette.gpu
-        case .network: Palette.network
+        case .cpu: Palette.accent
+        case .memory: Palette.accent
+        case .gpu: Palette.accent
+        case .network: Palette.accent
         case .temperature: Palette.red
-        case .battery: Palette.battery
+        case .battery: Palette.accent
         }
     }
 

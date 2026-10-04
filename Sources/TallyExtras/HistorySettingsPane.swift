@@ -145,11 +145,11 @@ private struct DailyMemoryChart: View {
     var body: some View {
         let hasData = values.contains { $0 > 0 }
         UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 10, style: .continuous)
-            .fill(Palette.memory.opacity(hasData ? 0.10 : 0.08))
+            .fill(Palette.accent.opacity(hasData ? 0.10 : 0.08))
             .overlay {
                 if hasData {
                     DailyBars(fractions: fractions)
-                        .fill(Palette.memory)
+                        .fill(Palette.accent)
                         .padding(.horizontal, 6)
                         .padding(.top, 6)
                 } else {

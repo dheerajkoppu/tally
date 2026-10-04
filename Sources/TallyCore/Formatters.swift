@@ -10,8 +10,11 @@ public struct Figure: Hashable, Sendable {
         self.unit = unit
     }
 
+    /// Percent and degree signs sit against the number; other units follow a space.
+    public var joinsUnit: Bool { unit == "%" || unit == "°" }
+
     /// "53.88 GB"
-    public var text: String { unit.isEmpty ? value : (unit == "%" || unit == "°" ? value + unit : "\(value) \(unit)") }
+    public var text: String { unit.isEmpty ? value : (joinsUnit ? value + unit : "\(value) \(unit)") }
 }
 
 /// Formatting rules matching Activity Monitor: memory in binary units, disk and network in decimal units.

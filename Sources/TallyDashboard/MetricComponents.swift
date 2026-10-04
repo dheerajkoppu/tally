@@ -3,9 +3,9 @@ import TallyCore
 
 /// Sizes measured from the Tally tab screenshots.
 enum MetricLayout {
-    static let heroHeight: CGFloat = 200
+    static let heroHeight: CGFloat = 196
     static let heroColumnWidth: CGFloat = 170
-    static let tileHeight: CGFloat = 110
+    static let tileHeight: CGFloat = 100
     static let tilePadding: CGFloat = 14
     /// As tight as the app list in the Tally launch video.
     static let rowHeight: CGFloat = 46.5
@@ -16,7 +16,7 @@ enum MetricLayout {
     static let visibleApps = 8
 }
 
-/// Caption, big figure, pressure pill and key figures on the left of the hero card.
+/// Big figure, its caption, a pressure chip and key figures on the left of the hero card.
 struct MetricHeroSummary: View, Equatable {
     let caption: String
     let figure: Figure
@@ -26,15 +26,10 @@ struct MetricHeroSummary: View, Equatable {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(caption)
-                .font(Typography.heroCaption)
-                .foregroundStyle(Palette.ink2)
-                .lineLimit(1)
-                .accessibilityHidden(!isPlaceholder)
             Group {
                 if isPlaceholder {
-                    MetricSkeletonBar(width: 96, height: 34)
-                        .frame(height: 52, alignment: .center)
+                    MetricSkeletonBar(width: 96, height: 30)
+                        .frame(height: 48, alignment: .center)
                         .accessibilityHidden(true)
                 } else {
                     MetricHeroFigure(figure: figure)
@@ -43,10 +38,14 @@ struct MetricHeroSummary: View, Equatable {
                 }
             }
             .frame(width: MetricLayout.heroColumnWidth, alignment: .leading)
-            .padding(.top, 1)
+            Text(caption)
+                .font(Typography.cardDetail)
+                .foregroundStyle(Palette.ink2)
+                .lineLimit(1)
+                .accessibilityHidden(!isPlaceholder)
             if let pressure {
                 MetricPressurePill(pressure: pressure)
-                    .padding(.top, 6)
+                    .padding(.top, 8)
             }
             Spacer(minLength: 8)
             VStack(spacing: 7.5) {
@@ -60,17 +59,17 @@ struct MetricHeroSummary: View, Equatable {
     }
 }
 
-/// The huge hero number with a smaller grey unit: "66 %", "53.42 GB".
+/// The hero number: "66%" as one figure, "53.42 GB" with a smaller grey unit.
 struct MetricHeroFigure: View {
     let figure: Figure
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text(figure.value)
+        HStack(alignment: .firstTextBaseline, spacing: figure.joinsUnit ? 0 : 6) {
+            Text(figure.joinsUnit ? figure.value + figure.unit : figure.value)
                 .font(Typography.figure(Typography.heroFigureSize))
-                .tracking(-1.3)
+                .tracking(-0.8)
                 .foregroundStyle(Palette.ink)
-            if !figure.unit.isEmpty {
+            if !figure.unit.isEmpty, !figure.joinsUnit {
                 Text(figure.unit)
                     .font(Typography.heroUnit)
                     .foregroundStyle(Palette.ink2)
@@ -81,23 +80,14 @@ struct MetricHeroFigure: View {
     }
 }
 
-/// "✓ Normal" under the memory figure. Each level has its own symbol, so it reads without its colour.
+/// "Pressure Normal" under the memory figure. The level is spelled out, so it reads without its colour.
 struct MetricPressurePill: View {
     let pressure: MemoryPressure
 
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: pressure.symbol)
-                .font(Typography.inlineSymbol)
-            Text(pressure.label)
-                .font(Typography.pill)
-        }
-        .foregroundStyle(LegibleTint(pressure.tint, wash: 0.14))
-        .padding(.horizontal, 9.5)
-        .frame(height: 18)
-        .background(pressure.tint.opacity(0.14), in: Capsule())
-        .help("Memory pressure: how easily macOS can find memory for what is running.")
-        .accessibilityReading("Memory pressure", value: pressure.label)
+        Chip("Pressure", value: pressure.label, dot: pressure.tint)
+            .help("Memory pressure: how easily macOS can find memory for what is running.")
+            .accessibilityReading("Memory pressure", value: pressure.label)
     }
 }
 
@@ -164,37 +154,38 @@ struct MetricRangePicker<Item: Hashable & Identifiable>: View {
     }
 }
 
-/// A compact tinted capsule for short tags: "8 P", "Macintosh HD".
+/// A compact tag for short labels: "8 P", "Macintosh HD". Grey in the accent, coloured for a status.
 struct MetricTagPill: View {
     let text: String
     let tint: Color
 
     var body: some View {
+        let isStatus = tint != Palette.accent
         Text(text)
             .font(Typography.tag)
             .lineLimit(1)
-            .foregroundStyle(LegibleTint(tint, wash: 0.14))
+            .foregroundStyle(isStatus ? AnyShapeStyle(LegibleTint(tint, wash: 0.14)) : AnyShapeStyle(Palette.ink))
             .padding(.horizontal, 5.5)
-            .frame(height: 15)
-            .background(tint.opacity(0.14), in: Capsule())
+            .frame(height: 16)
+            .background(isStatus ? tint.opacity(0.14) : Palette.cardHighlight, in: RoundedRectangle(cornerRadius: Metrics.chipRadius, style: .continuous))
     }
 }
 
-/// Badge and grey label at the top of every stat tile.
+/// Grey symbol and label at the top of every stat tile.
 struct MetricTileHeader: View {
     let symbol: String
     let label: String
-    let tint: Color
 
     var body: some View {
-        HStack(spacing: 8) {
-            IconBadge(symbol, tint: tint)
+        HStack(spacing: 6) {
+            Image(systemName: symbol)
+                .font(Typography.cardSymbol)
                 .accessibilityHidden(true)
             Text(label)
-                .font(Typography.tileTitle)
-                .foregroundStyle(Palette.ink2)
+                .font(Typography.cardTitle)
                 .lineLimit(1)
         }
+        .foregroundStyle(Palette.ink2)
     }
 }
 
@@ -206,7 +197,7 @@ struct MetricStatTile: View, Equatable {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            MetricTileHeader(symbol: tile.symbol, label: tile.label, tint: tint)
+            MetricTileHeader(symbol: tile.symbol, label: tile.label)
             if isPlaceholder {
                 MetricSkeletonBar(width: 64, height: 16)
                     .frame(height: 24.5, alignment: .center)
@@ -306,7 +297,7 @@ struct MetricTopAppTile: View, Equatable {
             if let appID { AppRouter.shared.inspectedAppID = appID }
         } label: {
             VStack(alignment: .leading, spacing: 0) {
-                MetricTileHeader(symbol: Symbols.apps, label: "Top App", tint: tint)
+                MetricTileHeader(symbol: Symbols.apps, label: "Top App")
                 HStack(spacing: 9) {
                     if let appID {
                         AppIconView(appID: appID, bundlePath: bundlePath, size: 20)

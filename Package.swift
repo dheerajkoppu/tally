@@ -27,11 +27,6 @@ let package = Package(
             linkerSettings: [.linkedLibrary("sqlite3"), .linkedFramework("UserNotifications")]
         ),
         .target(name: "TallyProjects", dependencies: ["TallyCore"]),
-        .target(
-            name: "TallyAudio",
-            dependencies: ["TallyCore"],
-            linkerSettings: [.linkedFramework("CoreAudio"), .linkedFramework("AudioToolbox")]
-        ),
         .target(name: "TallyDashboard", dependencies: ["TallyCore"]),
         .target(name: "TallyMenuBar", dependencies: ["TallyCore"]),
         .target(
@@ -46,7 +41,7 @@ let package = Package(
             name: "Tally",
             dependencies: [
                 "TallyCore", "TallySystem", "TallyProcesses", "TallySensors", "TallyHistory",
-                "TallyProjects", "TallyAudio", "TallyDashboard", "TallyMenuBar", "TallyExtras",
+                "TallyProjects", "TallyDashboard", "TallyMenuBar", "TallyExtras",
                 "TallyFanControl",
             ]
         ),
@@ -55,7 +50,6 @@ let package = Package(
         .executableTarget(name: "probe-sensors", dependencies: ["TallyCore", "TallySensors"], path: "Probes/probe-sensors"),
         .executableTarget(name: "probe-history", dependencies: ["TallyCore", "TallyHistory"], path: "Probes/probe-history"),
         .executableTarget(name: "probe-projects", dependencies: ["TallyCore", "TallyProjects"], path: "Probes/probe-projects"),
-        .executableTarget(name: "probe-audio", dependencies: ["TallyCore", "TallyAudio"], path: "Probes/probe-audio"),
     ],
     swiftLanguageModes: [.v5]
 )

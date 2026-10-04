@@ -54,11 +54,6 @@ enum MainMenu {
             item.representedObject = tab.rawValue
         }
         viewMenu.addItem(.separator())
-        let mixer = viewMenu.addItem(withTitle: "Show Volume Mixer", action: #selector(MenuActions.showVolumeMixer(_:)), keyEquivalent: "")
-        mixer.target = actions
-        let fans = viewMenu.addItem(withTitle: "Show Fan Control", action: #selector(MenuActions.showFanControl(_:)), keyEquivalent: "")
-        fans.target = actions
-        viewMenu.addItem(.separator())
         let fullScreen = viewMenu.addItem(withTitle: "Enter Full Screen", action: #selector(NSWindow.toggleFullScreen(_:)), keyEquivalent: "f")
         fullScreen.keyEquivalentModifierMask = [.command, .control]
         addSubmenu(viewMenu, to: mainMenu)
@@ -101,17 +96,5 @@ final class MenuActions: NSObject {
 
     @objc func checkForUpdates(_ sender: Any?) {
         UpdateChecker.checkForUpdates()
-    }
-
-    @objc func showVolumeMixer(_ sender: Any?) {
-        let router = AppRouter.shared
-        router.showMainWindow()
-        router.isMixerPresented = true
-    }
-
-    @objc func showFanControl(_ sender: Any?) {
-        let router = AppRouter.shared
-        router.showMainWindow()
-        router.isFanControlPresented = true
     }
 }

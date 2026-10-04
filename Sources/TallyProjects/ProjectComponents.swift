@@ -46,7 +46,7 @@ struct ProjectPill: View {
 struct ProjectBadge: View {
     let symbol: String
     var size: CGFloat = Metrics.badgeSize
-    var tint: Color = Palette.projects
+    var tint: Color = Palette.accent
 
     var body: some View {
         Image(systemName: symbol)
@@ -62,7 +62,7 @@ struct PortPill: View {
     let port: Int
 
     var body: some View {
-        ProjectPill(text: String(port), style: .tinted(Palette.projects))
+        ProjectPill(text: String(port), style: .tinted(Palette.accent))
     }
 }
 
@@ -72,7 +72,7 @@ struct StatusPill: View {
 
     var body: some View {
         if let pill = ProjectStatus.pill(for: activity, now: now) {
-            ProjectPill(text: pill.text, symbol: pill.symbol, style: pill.working ? .tinted(Palette.battery) : .neutral)
+            ProjectPill(text: pill.text, symbol: pill.symbol, style: pill.working ? .tinted(Palette.good) : .neutral)
         }
     }
 }
@@ -97,12 +97,12 @@ struct IdleServersBanner: View {
             .accessibilityElement(children: .combine)
             Spacer(minLength: 12)
             Button("Stop All", action: onStopAll)
-                .buttonStyle(ProjectButtonStyle(tint: Palette.projects, prominent: true))
+                .buttonStyle(ProjectButtonStyle(tint: Palette.caution, prominent: true))
                 .help("Stop every idle dev server, after a confirmation")
         }
         .padding(.horizontal, 12)
         .frame(height: ProjectLayout.bannerHeight)
-        .background(Palette.projects.opacity(0.11), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(Palette.caution.opacity(0.11), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private var title: String {
@@ -123,7 +123,7 @@ struct StoppedServersBanner: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            ProjectBadge(symbol: Symbols.check, tint: Palette.battery)
+            ProjectBadge(symbol: Symbols.check, tint: Palette.good)
             VStack(alignment: .leading, spacing: ProjectLayout.titleSpacing) {
                 Text(result.title)
                     .font(Typography.rowTitle)
@@ -137,7 +137,7 @@ struct StoppedServersBanner: View {
         }
         .padding(.horizontal, 12)
         .frame(height: ProjectLayout.bannerHeight)
-        .background(Palette.battery.opacity(0.11), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(Palette.good.opacity(0.11), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }

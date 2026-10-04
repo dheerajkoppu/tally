@@ -143,7 +143,7 @@ public struct ExportView: View {
                 if let feedback {
                     Label(feedback.text, systemImage: feedback.symbol)
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(feedback.isError ? Palette.red : Palette.battery)
+                        .foregroundStyle(feedback.isError ? Palette.red : Palette.good)
                         .lineLimit(1)
                         .transition(.opacity)
                 }

@@ -174,7 +174,7 @@ struct ShareCardView: View {
                             .foregroundStyle(Palette.ink)
                             .padding(.leading, 12)
                         Spacer(minLength: 12)
-                        ShareMeter(fraction: largest > 0 ? Double(app.memoryBytes) / largest : 0, tint: Palette.memory)
+                        ShareMeter(fraction: largest > 0 ? Double(app.memoryBytes) / largest : 0, tint: Palette.accent)
                             .frame(width: 87, height: 4)
                         Text(Format.memory(app.memoryBytes).text)
                             .font(.system(size: 14, weight: .semibold).monospacedDigit())
@@ -205,7 +205,7 @@ struct ShareCardView: View {
                 }
                 .frame(height: 17)
                 HStack(spacing: 14) {
-                    ShareBarChart(slots: recent.slots, maxValue: 100, tint: Palette.cpu)
+                    ShareBarChart(slots: recent.slots, maxValue: 100, tint: Palette.accent)
                     VStack(alignment: .trailing, spacing: 0) {
                         Text("100%")
                         Spacer(minLength: 0)

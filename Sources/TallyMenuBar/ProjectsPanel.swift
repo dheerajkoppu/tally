@@ -129,7 +129,7 @@ struct ProjectsPanel: View {
                     .padding(.bottom, 14)
             }
             VStack(spacing: 8) {
-                IconBadge(TallyTab.projects.symbol, tint: Palette.projects, size: 34)
+                IconBadge(TallyTab.projects.symbol, tint: Palette.accent, size: 34)
                 Text("No dev servers running")
                     .font(.system(size: 13.5, weight: .semibold))
                     .foregroundStyle(Palette.ink)
@@ -158,7 +158,7 @@ private struct ProjectRow: View {
             HStack(spacing: 8) {
                 Image(systemName: TallyTab.projects.symbol)
                     .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(project.isWorking ? Palette.projects : Palette.ink2)
+                    .foregroundStyle(project.isWorking ? Palette.accent : Palette.ink2)
                     .frame(width: 18)
                 Text(project.name)
                     .font(PanelMetrics.rowFont)
@@ -199,7 +199,7 @@ private struct ProjectRow: View {
     private func badges(_ ports: [Int], showsIdle: Bool) -> some View {
         HStack(spacing: 8) {
             ForEach(ports.prefix(2), id: \.self) { port in
-                PanelTag(text: String(port), tint: Palette.battery)
+                PanelTag(text: String(port), tint: Palette.accent)
             }
             if ports.count > 2 {
                 Text(verbatim: "+\(ports.count - 2)")
@@ -249,7 +249,7 @@ private struct IdleBanner: View {
             HStack(spacing: 8) {
                 Image(systemName: "moon.zzz.fill")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Palette.projects)
+                    .foregroundStyle(Palette.caution)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(processCount == 1 ? "1 dev server is idle" : "\(processCount) dev servers are idle")
                         .font(.system(size: 12.5, weight: .semibold))
@@ -264,7 +264,7 @@ private struct IdleBanner: View {
                     Button("Stop All") {
                         withAnimation(reduceMotion ? nil : .snappy(duration: 0.2)) { pendingStop = request }
                     }
-                    .buttonStyle(SoftButtonStyle(tint: Palette.projects, prominent: true))
+                    .buttonStyle(SoftButtonStyle(tint: Palette.caution, prominent: true))
                     .help("Stop the idle dev servers, after asking")
                 }
             }
@@ -274,7 +274,7 @@ private struct IdleBanner: View {
             }
         }
         .padding(10)
-        .background(Palette.projects.opacity(0.10), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .background(Palette.caution.opacity(0.10), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
         .onChange(of: pendingStop) { _, pending in
             PanelActions.isConfirming = pending != nil
         }
@@ -338,7 +338,7 @@ private struct PanelStoppedBanner: View {
         HStack(spacing: 8) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(LegibleTint(Palette.battery, wash: 0.10))
+                .foregroundStyle(LegibleTint(Palette.good, wash: 0.10))
             VStack(alignment: .leading, spacing: 1) {
                 Text(result.title)
                     .font(.system(size: 12.5, weight: .semibold))
@@ -352,7 +352,7 @@ private struct PanelStoppedBanner: View {
             Spacer(minLength: 0)
         }
         .padding(10)
-        .background(Palette.battery.opacity(0.10), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .background(Palette.good.opacity(0.10), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }

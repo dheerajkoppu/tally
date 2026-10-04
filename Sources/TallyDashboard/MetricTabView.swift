@@ -50,10 +50,6 @@ public struct MetricTabView: View {
             }
             appList(content.list, liveApps: liveApps)
                 .metricForceQuitConfirmation($forceQuitRequest, onDone: resample)
-            if tab == .battery, MetricSensorsCard.hasContent(store.snapshot.sensors) {
-                MetricSensorsCard(sensors: store.snapshot.sensors, unit: settings.temperatureUnit)
-                    .equatable()
-            }
         }
         .transaction { transaction in
             transaction.animation = nil
@@ -161,7 +157,7 @@ public struct MetricTabView: View {
         let limit = showsAllApps ? Int.max : MetricLayout.visibleApps
         switch range {
         case .live:
-            let top = liveApps.first.map { $0.value(for: list.appMetric) } ?? 0
+            let top = max(liveApps.first.map { $0.value(for: list.appMetric) } ?? 0, list.format.meterFloor)
             let rows = liveApps.prefix(limit).map { app in
                 let value = app.value(for: list.appMetric)
                 return MetricAppRowModel(app: app, value: list.format.text(value), fraction: top > 0 ? value / top : 0)
@@ -180,7 +176,7 @@ public struct MetricTabView: View {
         case .history(let historyRange):
             let loaded = loadedHistory
             let totals = loaded?.topApps ?? []
-            let top = totals.first?.value ?? 0
+            let top = max(totals.first?.value ?? 0, list.historyFormat.meterFloor)
             let rows = totals.prefix(limit).map { total in
                 MetricAppRowModel(
                     total: total,

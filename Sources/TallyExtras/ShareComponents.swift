@@ -3,16 +3,16 @@ import TallyCore
 
 extension Palette {
     /// The warm ground around an exported image, and the glow that lights it from the lower right.
-    static let shareGround = Color.dynamic(light: 0xF1F0E7, dark: 0x131315)
-    static let shareGlow = Color.dynamic(light: 0xFAAD66, dark: 0x8A4620)
-    static let shareGlowSoft = Color.dynamic(light: 0xF9B97A, dark: 0x6B3A1D)
-    static let shareGlowDeep = Color.dynamic(light: 0xEE8657, dark: 0x9E4424)
+    static let shareGround = Color.dynamic(light: 0xF2F2F7, dark: 0x131315)
+    static let shareGlow = Color.dynamic(light: 0xA5A3F2, dark: 0x3A3899)
+    static let shareGlowSoft = Color.dynamic(light: 0xB9B8F6, dark: 0x2C2B78)
+    static let shareGlowDeep = Color.dynamic(light: 0x7A78E6, dark: 0x4947B8)
     /// The card an exported image sits on, and the panels inside it.
     static let shareCard = Color.dynamic(light: 0xFFFFFF, dark: 0x1C1C1F)
     static let shareInset = Color.dynamic(light: 0xF8F8FA, dark: 0x252528)
     static let shareTrack = Color.dynamic(light: 0xEBEBEE, dark: 0x333337, increasedContrastLight: 0xDCDCE0, increasedContrastDark: 0x46464B)
     static let shareEdge = Color.dynamic(light: 0x000000, dark: 0xFFFFFF, lightAlpha: 0.07, darkAlpha: 0.09)
-    static let shareShadow = Color.dynamic(light: 0x5A4020, dark: 0x000000, lightAlpha: 0.08, darkAlpha: 0.5)
+    static let shareShadow = Color.dynamic(light: 0x2A2850, dark: 0x000000, lightAlpha: 0.08, darkAlpha: 0.5)
     /// The light unit beside a large figure ("GB").
     static let shareUnit = Color.dynamic(light: 0xA8A8AD, dark: 0x707075, increasedContrastLight: 0x6E6E73, increasedContrastDark: 0xA1A1A6)
     static let pressureElevated = Color.dynamic(light: 0xE8791E, dark: 0xF0913C, increasedContrastLight: 0xB35A0C, increasedContrastDark: 0xF7B477)
@@ -22,7 +22,7 @@ extension MemoryPressure {
     /// Green, orange and red, as the exported images show the level.
     var shareTint: Color {
         switch self {
-        case .normal: Palette.battery
+        case .normal: Palette.good
         case .warning: Palette.pressureElevated
         case .critical: Palette.red
         }

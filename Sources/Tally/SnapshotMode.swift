@@ -49,16 +49,6 @@ enum SnapshotMode {
             mainWindow.setFrame(savedFrame, display: true)
             await pause(0.5)
 
-            router.isMixerPresented = true
-            await pause(1)
-            capturePopovers(to: file("popover-mixer.png"))
-            router.isFanControlPresented = true
-            await pause(1)
-            print("Popovers open after opening Fan Control over the Volume Mixer: \(popoverWindows().count)")
-            capturePopovers(to: file("popover-fans.png"))
-            router.isFanControlPresented = false
-            await pause(0.5)
-
             router.isExportPresented = true
             await pause(1.5)
             if let sheet = mainWindow.attachedSheet {
@@ -124,18 +114,6 @@ enum SnapshotMode {
         settings.showInDock = original.dock
         settings.showInMenuBar = original.menuBar
         await state("Restored")
-    }
-
-    private static func popoverWindows() -> [NSWindow] {
-        NSApp.windows.filter { $0.isVisible && String(describing: type(of: $0)).contains("Popover") }
-    }
-
-    /// Only the popover's content, on a plain window background, since its glass does not draw into a capture.
-    private static func capturePopovers(to file: URL) {
-        for window in popoverWindows() {
-            guard let view = window.contentViewController?.view else { continue }
-            capture(view, scale: window.backingScaleFactor, background: NSColor.windowBackgroundColor, to: file)
-        }
     }
 
     /// The window's title and each toolbar platter, control and segment, as text.

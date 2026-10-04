@@ -95,7 +95,7 @@ struct MetricDriveRow: View, Equatable {
                     Text(row.name)
                         .font(Typography.rowTitle)
                         .foregroundStyle(Palette.ink)
-                    MetricTagPill(text: row.needsAttention ? "Needs Attention" : "Healthy", tint: row.needsAttention ? Palette.red : Palette.battery)
+                    MetricTagPill(text: row.needsAttention ? "Needs Attention" : "Healthy", tint: row.needsAttention ? Palette.red : Palette.good)
                 }
                 Text(row.subtitle)
                     .font(Typography.rowSubtitle)

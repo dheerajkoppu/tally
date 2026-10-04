@@ -5,14 +5,14 @@ import TallyCore
 enum PanelMetrics {
     static let width: CGFloat = 370
     static let padding: CGFloat = 12
-    static let cardRadius: CGFloat = 14
-    static let cardPadding: CGFloat = 18
+    static let cardRadius: CGFloat = 12
+    static let cardPadding: CGFloat = 16
     static let appRowHeight: CGFloat = 27
     static let detailRowHeight: CGFloat = 24.5
     static let meterWidth: CGFloat = 56
     static let chartSize = CGSize(width: 112, height: 33)
-    /// The line chart along the bottom of an Overview card.
-    static let miniChartHeight: CGFloat = 25
+    /// The gauge or bar chart on the right of an Overview card.
+    static let miniVisualSize = CGSize(width: 56, height: 40)
     static let rowFont = Font.system(size: 12.5)
     static let valueFont = Font.system(size: 12.5, weight: .medium).monospacedDigit()
     static let emphasizedValueFont = Font.system(size: 13, weight: .semibold).monospacedDigit()
@@ -43,9 +43,7 @@ enum PanelActions {
     }
 
     static func openFanControl() {
-        dismiss()
-        AppRouter.shared.showMainWindow()
-        AppRouter.shared.isFanControlPresented = true
+        openMainWindow(.sensors)
     }
 }
 
@@ -96,7 +94,7 @@ struct PanelCard<Content: View>: View {
     }
 }
 
-/// "OVERVIEW", in spaced caps, with an optional accessory on the right.
+/// "Overview": the name of the section the panel shows, with an optional accessory on the right.
 struct PanelSectionTitle<Accessory: View>: View {
     private let title: String
     private let accessory: Accessory
@@ -108,18 +106,16 @@ struct PanelSectionTitle<Accessory: View>: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(title.uppercased())
-                .font(.system(size: 11, weight: .semibold))
-                .tracking(0.8)
-                .panelSecondaryText()
-                .accessibilityLabel(title)
+            Text(title)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Palette.ink)
                 .accessibilityAddTraits(.isHeader)
             Spacer(minLength: 8)
             accessory
         }
         .lineLimit(1)
         .padding(.horizontal, 6)
-        .frame(height: 16)
+        .frame(height: 18)
     }
 }
 
@@ -207,7 +203,7 @@ extension PanelDetailRow where Value == Text {
     }
 }
 
-/// A small tinted capsule, tighter than `Pill`, for ports and pressure.
+/// A small tinted tag, tighter than `Pill`, for ports and pressure.
 struct PanelTag: View {
     let text: String
     let tint: Color
@@ -220,13 +216,13 @@ struct PanelTag: View {
             .foregroundStyle(tint)
             .lineLimit(1)
             .fixedSize()
-            .padding(.horizontal, fontSize * 0.55)
-            .padding(.vertical, 0.5)
-            .background(tint.opacity(0.16), in: Capsule())
+            .padding(.horizontal, fontSize * 0.5)
+            .padding(.vertical, 1)
+            .background(tint.opacity(0.16), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
     }
 }
 
-/// A large rounded number with a smaller, lighter unit, set as one line of text: "69 %", "53.88 GB".
+/// A large bold number with its unit, set as one line of text: "69%", "53.88 GB".
 /// The panel's lighter take on `BigFigure`: one text to lay out, never scaled down, so an update measures it once.
 struct PanelFigure: View, Equatable {
     private let figure: Figure
@@ -238,13 +234,13 @@ struct PanelFigure: View, Equatable {
     }
 
     var body: some View {
-        let value = Text(figure.value)
+        let value = Text(figure.joinsUnit ? figure.value + figure.unit : figure.value)
             .font(Typography.figure(size))
-            .tracking(-size * 0.02)
+            .tracking(-size * 0.015)
             .foregroundStyle(Palette.ink)
-        let text = figure.unit.isEmpty
+        let text = figure.unit.isEmpty || figure.joinsUnit
             ? value
-            : value + Text(" " + figure.unit).font(Typography.figureUnit(size * 0.5)).foregroundStyle(Palette.ink2)
+            : value + Text(" " + figure.unit).font(Typography.figureUnit(size * 0.52)).foregroundStyle(Palette.ink2)
         text
             .lineLimit(1)
             .fixedSize()
@@ -397,22 +393,18 @@ struct PanelTopApps: View {
     }
 }
 
-/// A line over a flat tinted fill, sized by its frame. Built from shapes rather than a canvas,
-/// so an update redraws a path instead of re-rasterizing a layer.
-struct PanelAreaChart: View, Equatable {
-    private let fractions: [Double]
+/// Recent values as accent bars on faint tracks, sized by its frame. With more values than fit, the newest are drawn.
+struct PanelBarChart: View, Equatable {
+    private let values: [Double]
     private let tint: Color
-    private let lineWidth: CGFloat
+    private let maxValue: Double
     private let summary: String?
 
     /// - Parameter summary: what VoiceOver reads for the chart; nil hides it.
-    init<Values: Collection>(_ values: Values, tint: Color, maxValue: Double, lineWidth: CGFloat = 1.5, summary: String? = nil) where Values.Element == Double {
-        let top = max(maxValue, .leastNonzeroMagnitude)
-        var fractions = values.map { value in min(max(value.isFinite ? value / top : 0, 0), 1) }
-        if fractions.count == 1 { fractions.append(fractions[0]) }
-        self.fractions = fractions
+    init<Values: Collection>(_ values: Values, tint: Color = Palette.accent, maxValue: Double, summary: String? = nil) where Values.Element == Double {
+        self.values = values.map { $0.isFinite ? $0 : 0 }
         self.tint = tint
-        self.lineWidth = lineWidth
+        self.maxValue = maxValue
         self.summary = summary
     }
 
@@ -422,40 +414,7 @@ struct PanelAreaChart: View, Equatable {
     }
 
     var body: some View {
-        ZStack {
-            AreaChartShape(fractions: fractions, inset: lineWidth / 2, closed: true)
-                .fill(tint.opacity(0.15))
-            AreaChartShape(fractions: fractions, inset: lineWidth / 2, closed: false)
-                .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
-        }
-        .accessibilityElement()
-        .accessibilityLabel(summary ?? "")
-        .accessibilityHidden(summary == nil)
-    }
-}
-
-private struct AreaChartShape: Shape {
-    var fractions: [Double]
-    var inset: CGFloat
-    var closed: Bool
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        guard fractions.count > 1 else { return path }
-        let step = rect.width / CGFloat(fractions.count - 1)
-        let usableHeight = rect.height - inset * 2
-        let points = fractions.enumerated().map { index, fraction in
-            CGPoint(x: rect.minX + CGFloat(index) * step, y: rect.minY + inset + usableHeight * (1 - fraction))
-        }
-        if closed {
-            path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-            path.addLines(points)
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-            path.closeSubpath()
-        } else {
-            path.addLines(points)
-        }
-        return path
+        BarSparkline(values, tint: tint, maxValue: maxValue, slot: .fixed(4), summary: summary)
     }
 }
 

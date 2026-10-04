@@ -35,9 +35,9 @@ struct DashboardImageView: View {
                 }
                 .frame(height: Self.tileHeight)
                 HStack(spacing: 16) {
-                    AppsPanel(title: "Top apps by memory", tint: Palette.memory, apps: store.topApps(by: .memory, limit: 5), metric: .memory)
-                    AppsPanel(title: "Top apps by CPU", tint: Palette.cpu, apps: store.topApps(by: .cpu, limit: 5), metric: .cpu)
-                    AppsPanel(title: "Top apps by network", tint: Palette.network, apps: store.topApps(by: .network, limit: 5), metric: .network)
+                    AppsPanel(title: "Top apps by memory", tint: Palette.accent, apps: store.topApps(by: .memory, limit: 5), metric: .memory)
+                    AppsPanel(title: "Top apps by CPU", tint: Palette.accent, apps: store.topApps(by: .cpu, limit: 5), metric: .cpu)
+                    AppsPanel(title: "Top apps by network", tint: Palette.accent, apps: store.topApps(by: .network, limit: 5), metric: .network)
                 }
                 .frame(height: Self.appsHeight)
                 ShareFooter(
@@ -72,7 +72,7 @@ struct DashboardImageView: View {
             ],
             recent: slots(.cpu),
             maxValue: 100,
-            tint: Palette.cpu
+            tint: Palette.accent
         )
     }
 
@@ -90,7 +90,7 @@ struct DashboardImageView: View {
             ],
             recent: slots(.memory),
             maxValue: Double(max(memory.totalBytes, 1)),
-            tint: Palette.memory
+            tint: Palette.accent
         )
     }
 
@@ -108,7 +108,7 @@ struct DashboardImageView: View {
             ],
             recent: slots(.gpu),
             maxValue: 100,
-            tint: Palette.gpu
+            tint: Palette.accent
         )
     }
 
@@ -127,7 +127,7 @@ struct DashboardImageView: View {
             ],
             recent: recent,
             maxValue: Self.rateScale(recent),
-            tint: Palette.disk
+            tint: Palette.accent
         )
     }
 
@@ -145,7 +145,7 @@ struct DashboardImageView: View {
             ],
             recent: recent,
             maxValue: Self.rateScale(recent),
-            tint: Palette.network
+            tint: Palette.accent
         )
     }
 
@@ -172,7 +172,7 @@ struct DashboardImageView: View {
             ],
             recent: slots(.battery),
             maxValue: 100,
-            tint: Palette.battery
+            tint: Palette.accent
         )
     }
 

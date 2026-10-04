@@ -15,7 +15,7 @@ struct CPUPanel: View {
                 } caption: {
                     Text(cpu.chipName)
                 } trailing: {
-                    PanelAreaChart(values, tint: Palette.cpu, maxValue: PanelAreaChart.scale(values, floor: 10), summary: PanelChartSummary.text("CPU", current: Format.percent(cpu.totalPercent).text, values: values) { Format.percent($0).text })
+                    PanelBarChart(values, maxValue: PanelBarChart.scale(values, floor: 10), summary: PanelChartSummary.text("CPU", current: Format.percent(cpu.totalPercent).text, values: values) { Format.percent($0).text })
                         .frame(width: PanelMetrics.chartSize.width, height: PanelMetrics.chartSize.height)
                 }
                 VStack(spacing: 0) {
@@ -26,8 +26,8 @@ struct CPUPanel: View {
                         PanelDetailRow("Cores") {
                             HStack(spacing: 5) {
                                 if cpu.performanceCores > 0, cpu.efficiencyCores > 0 {
-                                    PanelTag(text: "\(cpu.performanceCores) P", tint: Palette.cpu, fontSize: 11)
-                                    PanelTag(text: "\(cpu.efficiencyCores) E", tint: Palette.cpu, fontSize: 11)
+                                    PanelTag(text: "\(cpu.performanceCores) P", tint: Palette.accent, fontSize: 11)
+                                    PanelTag(text: "\(cpu.efficiencyCores) E", tint: Palette.accent, fontSize: 11)
                                 }
                                 Text(verbatim: "\(cpu.logicalCores)")
                             }
@@ -35,7 +35,7 @@ struct CPUPanel: View {
                     }
                 }
                 .padding(.top, 9)
-                PanelTopApps(title: "Top Apps", tab: .cpu, metric: .cpu, apps: store.topApps(by: .cpu, limit: 5), tint: Palette.cpu, scaleFloor: 50) {
+                PanelTopApps(title: "Top Apps", tab: .cpu, metric: .cpu, apps: store.topApps(by: .cpu, limit: 5), tint: Palette.accent, scaleFloor: 50) {
                     Format.precisePercent($0)
                 }
             }
@@ -62,7 +62,7 @@ struct MemoryPanel: View {
                     }
                 } trailing: {
                     let values = store.live.memoryUsed.suffix(PanelMetrics.chartSamples)
-                    PanelAreaChart(values, tint: Palette.memory, maxValue: Double(max(memory.totalBytes, 1)), summary: PanelChartSummary.text("Memory", current: Format.memory(memory.usedBytes).text, values: values) { Format.memory(UInt64(max($0, 0))).text })
+                    PanelBarChart(values, maxValue: Double(max(memory.totalBytes, 1)), summary: PanelChartSummary.text("Memory", current: Format.memory(memory.usedBytes).text, values: values) { Format.memory(UInt64(max($0, 0))).text })
                         .frame(width: PanelMetrics.chartSize.width, height: PanelMetrics.chartSize.height)
                 }
                 SegmentedMeter([
@@ -79,7 +79,7 @@ struct MemoryPanel: View {
                     PanelDetailRow("Swap Used", value: Format.memory(memory.swapUsedBytes).text)
                 }
                 .padding(.top, 5)
-                PanelTopApps(title: "Top Apps", tab: .memory, metric: .memory, apps: Array(store.apps.prefix(5)), tint: Palette.memory) {
+                PanelTopApps(title: "Top Apps", tab: .memory, metric: .memory, apps: Array(store.apps.prefix(5)), tint: Palette.accent) {
                     Format.memory(UInt64(max($0, 0))).text
                 }
             }
@@ -88,11 +88,7 @@ struct MemoryPanel: View {
     }
 
     private func pressureTint(_ pressure: MemoryPressure) -> Color {
-        switch pressure {
-        case .normal: Palette.battery
-        case .warning: Palette.disk
-        case .critical: Palette.red
-        }
+        pressure.tint
     }
 }
 
@@ -111,7 +107,7 @@ struct DiskPanel: View {
                 } caption: {
                     Text(verbatim: "\(Format.storage(disk.usedBytes).text) used of \(Format.storage(disk.totalBytes).text)")
                 } trailing: {
-                    PanelMeter(usedFraction, tint: Palette.disk, height: 6)
+                    PanelMeter(usedFraction, tint: Palette.accent, height: 6)
                         .frame(width: PanelMetrics.chartSize.width)
                         .padding(.bottom, 4)
                 }
@@ -130,7 +126,7 @@ struct DiskPanel: View {
                     }
                 }
                 .padding(.top, 9)
-                PanelTopApps(title: "Top Apps by Disk Writes", tab: .disk, metric: .diskWrite, apps: store.topApps(by: .diskWrite, limit: 5), tint: Palette.disk) {
+                PanelTopApps(title: "Top Apps by Disk Writes", tab: .disk, metric: .diskWrite, apps: store.topApps(by: .diskWrite, limit: 5), tint: Palette.accent) {
                     Format.rate($0).text
                 }
             }
@@ -164,7 +160,7 @@ struct NetworkPanel: View {
                         Text(Format.rate(network.uploadBytesPerSecond).text)
                     }
                 } trailing: {
-                    PanelAreaChart(values, tint: Palette.network, maxValue: PanelAreaChart.scale(values, floor: 10_000), summary: PanelChartSummary.text("Download", current: Format.rate(network.downloadBytesPerSecond).text, values: values) { Format.rate($0).text })
+                    PanelBarChart(values, maxValue: PanelBarChart.scale(values, floor: 10_000), summary: PanelChartSummary.text("Download", current: Format.rate(network.downloadBytesPerSecond).text, values: values) { Format.rate($0).text })
                         .frame(width: PanelMetrics.chartSize.width, height: PanelMetrics.chartSize.height)
                 }
                 VStack(spacing: 0) {
@@ -183,7 +179,7 @@ struct NetworkPanel: View {
                     }
                 }
                 .padding(.top, 9)
-                PanelTopApps(title: "Top Apps by Download", tab: .network, metric: .networkIn, apps: store.topApps(by: .networkIn, limit: 5), tint: Palette.network) {
+                PanelTopApps(title: "Top Apps by Download", tab: .network, metric: .networkIn, apps: store.topApps(by: .networkIn, limit: 5), tint: Palette.accent) {
                     Format.rate($0).text
                 }
             }
@@ -293,7 +289,7 @@ struct GPUPanel: View {
                 } caption: {
                     Text(gpu.name.isEmpty ? store.snapshot.cpu.chipName : gpu.name)
                 } trailing: {
-                    PanelAreaChart(values, tint: Palette.gpu, maxValue: PanelAreaChart.scale(values, floor: 10), summary: PanelChartSummary.text("GPU", current: Format.percent(gpu.utilizationPercent).text, values: values) { Format.percent($0).text })
+                    PanelBarChart(values, maxValue: PanelBarChart.scale(values, floor: 10), summary: PanelChartSummary.text("GPU", current: Format.percent(gpu.utilizationPercent).text, values: values) { Format.percent($0).text })
                         .frame(width: PanelMetrics.chartSize.width, height: PanelMetrics.chartSize.height)
                 }
                 VStack(spacing: 0) {
@@ -304,7 +300,7 @@ struct GPUPanel: View {
                     }
                 }
                 .padding(.top, 9)
-                PanelTopApps(title: "Top Apps", tab: .gpu, metric: .gpu, apps: store.topApps(by: .gpu, limit: 5), tint: Palette.gpu) {
+                PanelTopApps(title: "Top Apps", tab: .gpu, metric: .gpu, apps: store.topApps(by: .gpu, limit: 5), tint: Palette.accent) {
                     Format.precisePercent($0)
                 }
             }
@@ -315,7 +311,6 @@ struct GPUPanel: View {
 
 struct BatteryPanel: View {
     @ObservedObject private var store = TallyStore.shared
-    @ObservedObject private var settings = AppSettings.shared
 
     var body: some View {
         let battery = store.snapshot.battery
@@ -328,7 +323,7 @@ struct BatteryPanel: View {
                     } caption: {
                         Text(BatteryText.remaining(battery))
                     } trailing: {
-                        PanelMeter(battery.percent / 100, tint: battery.percent <= 10 && !battery.isCharging ? Palette.red : Palette.battery, height: 6)
+                        PanelMeter(battery.percent / 100, tint: battery.percent <= 10 && !battery.isCharging ? Palette.red : Palette.accent, height: 6)
                             .frame(width: PanelMetrics.chartSize.width)
                             .padding(.bottom, 4)
                     }
@@ -352,11 +347,7 @@ struct BatteryPanel: View {
                         EmptyView()
                     }
                 }
-                SensorTiles(sensors: store.snapshot.sensors, unit: settings.temperatureUnit)
-                if !store.snapshot.sensors.fans.isEmpty {
-                    FanRows(fans: store.snapshot.sensors.fans)
-                }
-                PanelTopApps(title: "Top Apps by Power", tab: .battery, metric: .power, apps: store.topApps(by: .power, limit: 5), tint: Palette.battery) {
+                PanelTopApps(title: "Top Apps by Power", tab: .battery, metric: .power, apps: store.topApps(by: .power, limit: 5), tint: Palette.accent) {
                     Format.power($0).text
                 }
             }
@@ -365,85 +356,71 @@ struct BatteryPanel: View {
     }
 }
 
-/// CPU and GPU temperature and peripheral batteries, three to a row.
-private struct SensorTiles: View {
-    let sensors: SensorStats
-    let unit: TemperatureUnit
+/// CPU temperature with its recent history, every other temperature, the fans and connected devices.
+struct SensorsPanel: View {
+    @ObservedObject private var store = TallyStore.shared
+    @ObservedObject private var settings = AppSettings.shared
 
-    private struct Tile: Identifiable {
-        var id: String
-        var symbol: String
-        var tint: Color
-        var figure: String
-        var caption: String
-    }
-
-    private var tiles: [Tile] {
-        var tiles: [Tile] = []
-        if let celsius = sensors.cpuTemperatureCelsius {
-            tiles.append(Tile(id: "cpu", symbol: Symbols.temperature, tint: Palette.red, figure: Format.temperature(celsius, unit: unit).text, caption: "CPU"))
-        }
-        if let celsius = sensors.gpuTemperatureCelsius {
-            tiles.append(Tile(id: "gpu", symbol: Symbols.temperature, tint: Palette.gpu, figure: Format.temperature(celsius, unit: unit).text, caption: "GPU"))
-        }
-        for peripheral in sensors.peripheralBatteries {
-            tiles.append(Tile(id: "peripheral-\(peripheral.id)", symbol: peripheral.kind.symbol, tint: Palette.battery, figure: Format.percent(peripheral.percent).text, caption: peripheral.name))
-        }
-        return Array(tiles.prefix(6))
-    }
+    /// The panel stays short: the full list is on the Sensors tab of the window.
+    private static let visibleReadings = 8
 
     var body: some View {
-        let tiles = tiles
-        if !tiles.isEmpty {
-            VStack(alignment: .leading, spacing: 0) {
-                PanelDivider()
-                    .padding(.top, 10)
-                    .padding(.bottom, 3)
-                PanelListTitle(title: "Temperatures & Devices", height: 26)
-                Grid(horizontalSpacing: 6, verticalSpacing: 6) {
-                    ForEach(Array(stride(from: 0, to: tiles.count, by: 3)), id: \.self) { start in
-                        GridRow {
-                            ForEach(0..<3, id: \.self) { offset in
-                                if start + offset < tiles.count {
-                                    tileView(tiles[start + offset])
-                                } else {
-                                    Color.clear.frame(maxWidth: .infinity, maxHeight: 1)
-                                }
-                            }
+        let sensors = store.snapshot.sensors
+        let unit = settings.temperatureUnit
+        let readings = sensors.temperatures.filter { $0.celsius > 0 }
+        VStack(spacing: 0) {
+            PanelSectionTitle("Sensors")
+            PanelCard {
+                if let celsius = sensors.cpuTemperatureCelsius, celsius > 0 {
+                    let range = TemperatureRange(celsius: celsius)
+                    let values = store.live.cpuTemperature.suffix(PanelMetrics.chartSamples)
+                    let current = Format.temperature(celsius, unit: unit)
+                    PanelMetricHeader {
+                        PanelFigure(current, size: 29)
+                    } caption: {
+                        Text(verbatim: "CPU, \(range.label.lowercased())")
+                    } trailing: {
+                        PanelBarChart(values, tint: range.tint, maxValue: TemperatureRange.scaleTop, summary: PanelChartSummary.text("CPU temperature", current: current.text, values: values) { Format.temperature($0, unit: unit).text })
+                            .frame(width: PanelMetrics.chartSize.width, height: PanelMetrics.chartSize.height)
+                    }
+                } else {
+                    Text(store.hasSample ? "This Mac does not report its temperatures." : "Reading sensors…")
+                        .font(PanelMetrics.rowFont)
+                        .panelSecondaryText()
+                        .frame(maxWidth: .infinity, minHeight: PanelMetrics.detailRowHeight, alignment: .leading)
+                }
+                if !readings.isEmpty {
+                    VStack(spacing: 0) {
+                        ForEach(readings.prefix(Self.visibleReadings)) { reading in
+                            PanelDetailRow(reading.name, value: Format.temperature(reading.celsius, unit: unit).text)
                         }
                     }
+                    .padding(.top, 9)
                 }
-                .padding(.bottom, 3)
+                if !sensors.fans.isEmpty {
+                    FanRows(fans: sensors.fans)
+                }
+                if !sensors.peripheralBatteries.isEmpty {
+                    DeviceRows(devices: sensors.peripheralBatteries)
+                }
+                if readings.count > Self.visibleReadings || sensors.fans.isEmpty {
+                    PanelDivider()
+                        .padding(.top, 10)
+                        .padding(.bottom, 6)
+                    Button(readings.count > Self.visibleReadings ? "Show All \(readings.count) Sensors" : "Open Sensors") {
+                        PanelActions.openMainWindow(.sensors)
+                    }
+                    .buttonStyle(PanelTextButtonStyle())
+                    .frame(height: 22)
+                    .padding(.horizontal, -PanelTextButtonStyle.horizontalPadding)
+                }
             }
+            .padding(.top, 10)
         }
-    }
-
-    private func tileView(_ tile: Tile) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(tile.figure)
-                .font(Typography.figure(15))
-                .foregroundStyle(Palette.ink)
-            HStack(spacing: 4) {
-                Image(systemName: tile.symbol)
-                    .font(.system(size: 9.5, weight: .semibold))
-                    .foregroundStyle(tile.tint)
-                    .frame(width: 11)
-                Text(tile.caption)
-                    .font(.system(size: 10.5))
-                    .panelSecondaryText()
-                    .truncationMode(.tail)
-            }
-        }
-        .lineLimit(1)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 7)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.raised, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-        .accessibilityElement(children: .combine)
     }
 }
 
-/// Each fan's speed, with a way into fan control in the main window.
+/// Each fan's speed, with a way into fan control on the window's Sensors tab.
 private struct FanRows: View {
     let fans: [FanReading]
 
@@ -460,7 +437,31 @@ private struct FanRows: View {
                 .help("Set fan speeds in the Tally window")
             }
             ForEach(fans) { fan in
-                PanelDetailRow(fan.name, value: "\(PanelFormat.integer(fan.rpm)) rpm")
+                PanelDetailRow(fan.name, value: fan.rpm >= 1 ? "\(PanelFormat.integer(fan.rpm)) rpm" : "Off")
+            }
+        }
+    }
+}
+
+/// Battery levels of AirPods, mice and keyboards, each with a small meter.
+private struct DeviceRows: View {
+    let devices: [PeripheralBattery]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            PanelDivider()
+                .padding(.top, 10)
+                .padding(.bottom, 3)
+            PanelListTitle(title: "Devices", height: 26)
+            ForEach(devices) { device in
+                PanelDetailRow(device.name) {
+                    HStack(spacing: 10) {
+                        PanelMeter(device.percent / 100, tint: device.percent <= 20 ? Palette.red : Palette.accent, height: 4)
+                            .frame(width: PanelMetrics.meterWidth)
+                        Text(Format.percent(device.percent).text)
+                            .frame(width: 38, alignment: .trailing)
+                    }
+                }
             }
         }
     }

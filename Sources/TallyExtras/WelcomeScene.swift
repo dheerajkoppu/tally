@@ -6,9 +6,9 @@ extension Palette {
     /// A process dot before it folds into its app.
     static let welcomeProcessDot = Color.dynamic(light: 0xB2C3D9, dark: 0x3F4C60)
     /// The two orbits the app icons sit on.
-    static let welcomeRing = Color.dynamic(light: 0x007AFF, dark: 0x409CFF, lightAlpha: 0.16, darkAlpha: 0.22)
+    static let welcomeRing = Color.dynamic(light: 0x5856D6, dark: 0x8D8BFF, lightAlpha: 0.16, darkAlpha: 0.22)
     /// The soft light behind the app count.
-    static let welcomeGlow = Color.dynamic(light: 0x007AFF, dark: 0x0A84FF, lightAlpha: 0.13, darkAlpha: 0.16)
+    static let welcomeGlow = Color.dynamic(light: 0x5856D6, dark: 0x6B69F4, lightAlpha: 0.13, darkAlpha: 0.16)
 }
 
 /// Everything the intro needs, captured once from the first sample so nothing jumps while the store updates.

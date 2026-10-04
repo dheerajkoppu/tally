@@ -28,6 +28,8 @@ public enum ChartUnit: Hashable, Sendable {
     case memory
     case rate
     case power
+    /// Celsius values, spoken in the chosen unit.
+    case temperature(TemperatureUnit)
 
     public func text(_ value: Double) -> String {
         let safe = value.isFinite ? value : 0
@@ -36,6 +38,7 @@ public enum ChartUnit: Hashable, Sendable {
         case .memory: Format.memory(safe > 0 ? UInt64(min(safe, 1e18)) : 0).text
         case .rate: Format.rate(safe).text
         case .power: Format.power(safe).text
+        case .temperature(let unit): Format.temperature(safe, unit: unit).text
         }
     }
 
@@ -85,63 +88,113 @@ public struct SeriesChartDescriptor: AXChartDescriptorRepresentable, Equatable {
     }
 }
 
-/// Bottom-aligned bars with round tops, one per fraction of the full height, as one path.
+/// How wide a bar chart's columns are.
+public enum BarSlot: Equatable, Sendable {
+    /// Every value gets a column and the columns share the width, as the cores of a CPU do.
+    case fill
+    /// Columns about this wide, newest value at the right edge. Older values that do not fit are dropped, and
+    /// columns with no value yet stay empty.
+    case fixed(CGFloat)
+}
+
+/// Bottom-aligned columns, one per fraction of the full height, as one path. As a track every column is full height.
 public struct SparklineBars: Shape, Equatable {
     public var fractions: [Double]
-    public var inset: CGFloat
-    public var barRatio: CGFloat
+    public var isTrack: Bool
+    public var slot: BarSlot
 
-    public init(fractions: [Double], inset: CGFloat = 6, barRatio: CGFloat = 0.7) {
+    public init(fractions: [Double], isTrack: Bool = false, slot: BarSlot = .fill) {
         self.fractions = fractions
-        self.inset = inset
-        self.barRatio = barRatio
+        self.isTrack = isTrack
+        self.slot = slot
     }
 
     public func path(in rect: CGRect) -> Path {
         var path = Path()
-        guard !fractions.isEmpty, rect.width > inset * 2 else { return path }
-        let slot = (rect.width - inset * 2) / CGFloat(fractions.count)
-        let barWidth = max(1.5, slot * barRatio)
-        let radius = min(barWidth / 2, 4)
-        let usableHeight = rect.height - inset
-        for (index, fraction) in fractions.enumerated() {
-            let barHeight = max(radius, usableHeight * fraction)
-            let bar = CGRect(x: rect.minX + inset + CGFloat(index) * slot + (slot - barWidth) / 2, y: rect.maxY - barHeight, width: barWidth, height: barHeight)
-            path.addRoundedRect(in: bar, cornerRadii: RectangleCornerRadii(topLeading: radius, bottomLeading: 0, bottomTrailing: 0, topTrailing: radius), style: .circular)
+        guard rect.width > 0, rect.height > 0 else { return path }
+        let columns: Int
+        switch slot {
+        case .fill: columns = fractions.count
+        case .fixed(let width): columns = max(1, Int((rect.width / max(width, 1)).rounded()))
+        }
+        guard columns > 0 else { return path }
+        let slotWidth = rect.width / CGFloat(columns)
+        let gap = min(max(slotWidth * 0.26, 1), 3)
+        let barWidth = max(1, slotWidth - gap)
+        let radius = min(barWidth / 2, 1.5)
+        let shown = fractions.suffix(columns)
+        let firstColumn = columns - shown.count
+        func addBar(column: Int, height: CGFloat) {
+            let bar = CGRect(x: rect.minX + CGFloat(column) * slotWidth + gap / 2, y: rect.maxY - height, width: barWidth, height: height)
+            path.addRoundedRect(in: bar, cornerSize: CGSize(width: radius, height: radius), style: .continuous)
+        }
+        if isTrack {
+            for column in 0..<columns { addBar(column: column, height: rect.height) }
+        } else {
+            for (offset, fraction) in shown.enumerated() {
+                addBar(column: firstColumn + offset, height: max(radius * 2, rect.height * fraction))
+            }
         }
         return path
     }
 }
 
-/// Vertical bars with rounded tops on a faint tinted panel, as on the Overview cards.
+/// A bar chart of recent values: accent columns over a faint full-height track for each.
 /// Values are reduced to what a pixel can show, so an unchanged-looking chart is not redrawn.
 public struct BarSparkline: View, Equatable {
     private let fractions: [Double]
     private let tint: Color
-    private let showsPanel: Bool
+    private let slot: BarSlot
     private let summary: String?
 
     /// - Parameters:
     ///   - maxValue: the value a full-height bar stands for; nil scales to the largest value.
     ///   - summary: what VoiceOver reads for the chart, such as "CPU, 12 percent, last 4 minutes"; nil hides it.
-    public init(_ values: [Double], tint: Color, maxValue: Double? = nil, showsPanel: Bool = true, summary: String? = nil) {
+    public init<Values: Collection>(_ values: Values, tint: Color = Palette.accent, maxValue: Double? = nil, slot: BarSlot = .fixed(5), summary: String? = nil) where Values.Element == Double {
         let top = max(maxValue ?? (values.max() ?? 1), 0.000_001)
         self.fractions = values.map { quantizedFraction($0 / top, steps: 256) }
         self.tint = tint
-        self.showsPanel = showsPanel
+        self.slot = slot
         self.summary = summary
     }
 
     public var body: some View {
-        SparklineBars(fractions: fractions, inset: showsPanel ? 6 : 0)
-            .fill(tint)
-            .background {
-                if showsPanel {
-                    UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 5, bottomTrailingRadius: 5, topTrailingRadius: 10, style: .continuous)
-                        .fill(tint.opacity(0.09))
-                }
-            }
-            .chartAccessibility(summary)
+        ZStack {
+            SparklineBars(fractions: fractions, isTrack: true, slot: slot)
+                .fill(Palette.track)
+            SparklineBars(fractions: fractions, slot: slot)
+                .fill(tint)
+        }
+        .chartAccessibility(summary)
+    }
+}
+
+/// Two series stacked in each column, as user and system CPU are, over a faint track.
+public struct StackedBarSparkline: View, Equatable {
+    private let lower: [Double]
+    private let total: [Double]
+    private let slot: BarSlot
+    private let summary: String?
+
+    /// - Parameter maxValue: the value a full-height bar stands for.
+    public init(lower: [Double], upper: [Double], maxValue: Double, slot: BarSlot = .fixed(5), summary: String? = nil) {
+        let top = max(maxValue, 0.000_001)
+        self.lower = lower.map { quantizedFraction($0 / top, steps: 256) }
+        self.total = zip(lower, upper).map { quantizedFraction(($0 + $1) / top, steps: 256) }
+        self.slot = slot
+        self.summary = summary
+    }
+
+    public var body: some View {
+        ZStack {
+            SparklineBars(fractions: total, isTrack: true, slot: slot)
+                .fill(Palette.track)
+            SparklineBars(fractions: total, slot: slot)
+                .fill(Palette.accentSecond)
+            SparklineBars(fractions: lower, slot: slot)
+                .fill(Palette.accent)
+        }
+        .chartAccessibility(summary)
     }
 }
 

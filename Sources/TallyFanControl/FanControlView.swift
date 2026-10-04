@@ -1,41 +1,40 @@
 import SwiftUI
 import TallyCore
 
-/// The fan control popover: one row per fan with its live speed, an Automatic / Manual choice and a speed slider.
+/// The fan card on the Sensors tab: a dial per fan with its live speed, an Automatic / Manual choice and a speed slider.
 public struct FanControlView: View {
     @ObservedObject private var controller = FanController.shared
     @ObservedObject private var store = TallyStore.shared
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.colorSchemeContrast) private var contrast
 
     public init() {}
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            header
-            if hasNoFans {
-                FanNote(symbol: "wind", text: "This Mac has no fans. It cools itself silently, so there is nothing to control.")
-            } else {
-                helperCard
-                presets
-                ForEach(fans) { fan in
-                    FanRow(fan: fan, controller: controller)
-                }
-                ForEach(controller.otherFanApps, id: \.self) { app in
-                    FanNote(symbol: "exclamationmark.triangle", tint: Palette.disk, text: "\(app) is also installed. Let only one app control the fans at a time.")
-                }
-                if let message = controller.errorMessage {
-                    FanNote(symbol: "xmark.octagon", tint: Palette.red, text: message)
-                }
-                if showsUninstall {
-                    footer
+        Card {
+            VStack(alignment: .leading, spacing: 12) {
+                header
+                if hasNoFans {
+                    FanNote(symbol: "wind", text: "This Mac has no fans. It cools itself silently, so there is nothing to control.")
+                } else {
+                    helperCard
+                    FanRowGrid(spacing: 10, minimumColumnWidth: 300) {
+                        ForEach(fans) { fan in
+                            FanRow(fan: fan, controller: controller)
+                        }
+                    }
+                    ForEach(controller.otherFanApps, id: \.self) { app in
+                        FanNote(symbol: "exclamationmark.triangle", tint: Palette.caution, text: "\(app) is also installed. Let only one app control the fans at a time.")
+                    }
+                    if let message = controller.errorMessage {
+                        FanNote(symbol: "xmark.octagon", tint: Palette.red, text: message)
+                    }
+                    if showsUninstall {
+                        footer
+                    }
                 }
             }
         }
-        .padding(20)
-        .frame(width: 340, alignment: .topLeading)
         .onAppear { controller.refresh() }
-        .onExitCommand { dismiss() }
     }
 
     private var fans: [FanReading] {
@@ -54,24 +53,25 @@ public struct FanControlView: View {
     private var secondaryInk: Color { contrast == .increased ? Palette.ink : Palette.ink2 }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 9) {
-                IconBadge(Symbols.fan, tint: Palette.cpu)
-                Text("Fans")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Palette.ink)
-                Spacer(minLength: 8)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                CardHeader(fans.count == 1 ? "Fan" : "Fans", symbol: controller.hasManualFans ? "fan.fill" : Symbols.fan)
                 if controller.isDryRun {
-                    Pill("Dry Run", tint: Palette.disk, fontSize: 11)
+                    Pill("Dry Run", tint: Palette.caution, fontSize: 11)
                         .help("The helper is logging fan changes without making them")
                 }
             }
-            Text("Choose a fixed speed or let macOS decide. Fans return to automatic when Tally quits.")
-                .font(Typography.rowSubtitle)
-                .foregroundStyle(secondaryInk)
-                .fixedSize(horizontal: false, vertical: true)
+            if !hasNoFans {
+                HStack(alignment: .center, spacing: 12) {
+                    Text("Choose a fixed speed or let macOS decide. Fans return to automatic when Tally quits.")
+                        .font(Typography.rowSubtitle)
+                        .foregroundStyle(secondaryInk)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 8)
+                    presets
+                }
+            }
         }
-        .accessibilityElement(children: .combine)
     }
 
     @ViewBuilder
@@ -117,8 +117,8 @@ public struct FanControlView: View {
                 .accessibilityLabel("\(preset.title) preset")
                 .accessibilityAddTraits(isActive ? .isSelected : [])
             }
-            Spacer(minLength: 0)
         }
+        .fixedSize()
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1 : 0.5)
     }
@@ -142,7 +142,7 @@ public struct FanControlView: View {
     }
 }
 
-/// Name, live speed, mode and target slider for one fan.
+/// Dial, name, live speed, mode and target slider for one fan.
 private struct FanRow: View {
     let fan: FanReading
     @ObservedObject var controller: FanController
@@ -152,38 +152,44 @@ private struct FanRow: View {
         let mode = controller.mode(for: fan.id)
         let target = controller.target(for: fan)
         let hasRange = fan.maxRPM > fan.minRPM
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(fan.name)
-                    .font(Typography.rowTitle)
-                    .foregroundStyle(Palette.ink)
+        let speed = fan.rpm >= 1 ? "\(Format.integer(fan.rpm)) rpm" : "Off"
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                FanGauge(fraction: gaugeFraction(hasRange: hasRange), isManual: mode == .manual)
+                    .frame(width: 46, height: 46)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(speed)
+                        .font(Typography.figure(Typography.tileFigureSize))
+                        .foregroundStyle(Palette.ink)
+                    Text(fan.name)
+                        .font(Typography.rowSubtitle)
+                        .foregroundStyle(secondaryInk)
+                }
+                .lineLimit(1)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(fan.name) speed")
+                .accessibilityValue(speed)
                 Spacer(minLength: 8)
-                Text(fan.rpm >= 1 ? "\(Format.integer(fan.rpm)) rpm" : "Off")
-                    .font(Typography.rowValue)
-                    .foregroundStyle(Palette.ink)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(fan.name) speed")
-            .accessibilityValue(fan.rpm >= 1 ? "\(Format.integer(fan.rpm)) rpm" : "Off")
-
-            Picker("\(fan.name) mode", selection: Binding(
-                get: { mode },
-                set: { newMode in
-                    if newMode == .manual {
-                        controller.setManual(fan.id, rpm: target)
-                    } else {
-                        controller.setAuto(fan.id)
+                Picker("\(fan.name) mode", selection: Binding(
+                    get: { mode },
+                    set: { newMode in
+                        if newMode == .manual {
+                            controller.setManual(fan.id, rpm: target)
+                        } else {
+                            controller.setAuto(fan.id)
+                        }
+                    }
+                )) {
+                    ForEach(FanController.Mode.allCases) { mode in
+                        Text(mode.title).tag(mode)
                     }
                 }
-            )) {
-                ForEach(FanController.Mode.allCases) { mode in
-                    Text(mode.title).tag(mode)
-                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+                .disabled(!controller.canControl || !hasRange)
+                .help("Automatic lets macOS choose the speed. Manual holds the speed you set.")
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .disabled(!controller.canControl || !hasRange)
-            .help("Automatic lets macOS choose the speed. Manual holds the speed you set.")
 
             VStack(spacing: 3) {
                 Slider(
@@ -215,22 +221,72 @@ private struct FanRow: View {
             }
 
             if controller.externallyControlled.contains(fan.id) {
-                FanNote(symbol: "exclamationmark.triangle", tint: Palette.disk, text: "Another app is holding this fan at a fixed speed.")
+                FanNote(symbol: "exclamationmark.triangle", tint: Palette.caution, text: "Another app is holding this fan at a fixed speed.")
             }
         }
-        .padding(14)
-        .background(Palette.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(12)
+        .background(Palette.raised, in: RoundedRectangle(cornerRadius: Metrics.tileRadius, style: .continuous))
         .overlay {
             if contrast == .increased {
-                RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Palette.ink2, lineWidth: 1)
+                RoundedRectangle(cornerRadius: Metrics.tileRadius, style: .continuous).strokeBorder(Palette.ink2, lineWidth: 1)
             }
         }
     }
 
     private var secondaryInk: Color { contrast == .increased ? Palette.ink : Palette.ink2 }
 
+    /// Where the fan's speed sits between its slowest and fastest; a spinning fan always shows a sliver.
+    private func gaugeFraction(hasRange: Bool) -> Double {
+        guard fan.rpm >= 1 else { return 0 }
+        guard hasRange else { return 1 }
+        return min(max((fan.rpm - fan.minRPM) / (fan.maxRPM - fan.minRPM), 0.04), 1)
+    }
+
     private func caption(mode: FanController.Mode, target: Double) -> String {
         mode == .manual ? "Target \(Format.integer(target)) rpm" : "Set by macOS"
+    }
+}
+
+/// Fans side by side when the card is wide enough for two, stacked otherwise.
+private struct FanRowGrid: Layout {
+    var spacing: CGFloat
+    var minimumColumnWidth: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? minimumColumnWidth
+        let rows = rowHeights(width: width, subviews: subviews)
+        return CGSize(width: width, height: rows.reduce(0, +) + spacing * CGFloat(max(rows.count - 1, 0)))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let columns = columnCount(width: bounds.width, count: subviews.count)
+        let columnWidth = self.columnWidth(width: bounds.width, columns: columns)
+        var y = bounds.minY
+        for (row, rowHeight) in rowHeights(width: bounds.width, subviews: subviews).enumerated() {
+            for column in 0..<columns {
+                let index = row * columns + column
+                guard index < subviews.count else { break }
+                let x = bounds.minX + CGFloat(column) * (columnWidth + spacing)
+                subviews[index].place(at: CGPoint(x: x, y: y), anchor: .topLeading, proposal: ProposedViewSize(width: columnWidth, height: rowHeight))
+            }
+            y += rowHeight + spacing
+        }
+    }
+
+    private func columnCount(width: CGFloat, count: Int) -> Int {
+        max(1, min(count, 2, Int((width + spacing) / (minimumColumnWidth + spacing))))
+    }
+
+    private func columnWidth(width: CGFloat, columns: Int) -> CGFloat {
+        max(0, (width - spacing * CGFloat(columns - 1)) / CGFloat(columns))
+    }
+
+    private func rowHeights(width: CGFloat, subviews: Subviews) -> [CGFloat] {
+        let columns = columnCount(width: width, count: subviews.count)
+        let proposal = ProposedViewSize(width: columnWidth(width: width, columns: columns), height: nil)
+        return stride(from: 0, to: subviews.count, by: columns).map { start in
+            subviews[start..<min(start + columns, subviews.count)].map { $0.sizeThatFits(proposal).height }.max() ?? 0
+        }
     }
 }
 
@@ -267,12 +323,12 @@ private struct HelperCard: View {
                 }
             }
         }
-        .padding(14)
+        .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(Palette.raised, in: RoundedRectangle(cornerRadius: Metrics.tileRadius, style: .continuous))
         .overlay {
             if contrast == .increased {
-                RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Palette.ink2, lineWidth: 1)
+                RoundedRectangle(cornerRadius: Metrics.tileRadius, style: .continuous).strokeBorder(Palette.ink2, lineWidth: 1)
             }
         }
     }

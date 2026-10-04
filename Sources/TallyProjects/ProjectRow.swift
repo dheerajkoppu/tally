@@ -153,7 +153,7 @@ struct ProcessPanel: View {
                 .help("Open in Terminal")
                 .accessibilityLabel("Open \(project.name) in Terminal")
                 Button("Stop Project") { onStop(ProjectActions.stopRequest(for: project, force: false)) }
-                    .buttonStyle(ProjectButtonStyle(tint: Palette.projects))
+                    .buttonStyle(ProjectButtonStyle(tint: Palette.accent))
                     .help("Stop every process in \(project.name), after a confirmation")
             }
         }

@@ -15,8 +15,8 @@ struct OverviewBreakdownCard: View, Equatable {
 
     var body: some View {
         Card {
-            VStack(alignment: .leading, spacing: 18) {
-                CardHeader(content.title, symbol: content.symbol, tint: content.tint)
+            VStack(alignment: .leading, spacing: 14) {
+                CardHeader(content.title, symbol: content.symbol)
                     .accessibilityAddTraits(.isButton)
                     .accessibilityHint("Opens the \(content.tab.title) tab")
                     .accessibilityAction { AppRouter.shared.tab = content.tab }
@@ -46,7 +46,7 @@ struct OverviewBreakdownCard: View, Equatable {
             },
             title: content.centerTitle,
             subtitle: content.centerSubtitle,
-            lineWidth: 12,
+            lineWidth: 13,
             accessibilityTitle: content.title
         )
         .frame(width: Self.donutDiameter, height: Self.donutDiameter)

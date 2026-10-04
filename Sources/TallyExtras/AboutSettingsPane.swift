@@ -75,7 +75,7 @@ private struct PrivacyRow: View {
                 Text(text)
             } icon: {
                 Image(systemName: symbol)
-                    .foregroundStyle(Palette.battery)
+                    .foregroundStyle(Palette.good)
                     .frame(width: 20)
             }
         }

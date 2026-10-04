@@ -9,7 +9,7 @@ struct OverviewAlertsCard: View, Equatable {
         Card {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 9) {
-                    CardHeader("Worth a Look", symbol: "exclamationmark.triangle", tint: Palette.disk)
+                    CardHeader("Worth a Look", symbol: "exclamationmark.triangle")
                     Text(alerts.count == 1 ? "1 app" : "\(alerts.count) apps")
                         .font(Typography.caption)
                         .foregroundStyle(Palette.ink2)

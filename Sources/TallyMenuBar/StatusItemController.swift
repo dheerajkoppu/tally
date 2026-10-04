@@ -218,10 +218,6 @@ public final class StatusItemController {
     private func showPopover(takingFocus: Bool) {
         // A hidden item has no window to anchor to; showing then would throw, and a second show would leak its monitors.
         guard let button = statusItem.button, button.window != nil, statusItem.isVisible, !popover.isShown else { return }
-        // One popover at a time: the panel replaces the main window's mixer or fan control.
-        let router = AppRouter.shared
-        if router.isMixerPresented { router.isMixerPresented = false }
-        if router.isFanControlPresented { router.isFanControlPresented = false }
         let hostingController = NSHostingController(rootView: MenuBarPanelView())
         hostingController.sizingOptions = [.preferredContentSize]
         popover.contentViewController = hostingController

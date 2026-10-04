@@ -32,6 +32,8 @@ final class MemoryReader {
             stats.compressedBytes = UInt64(vm.compressor_page_count) * pageSize
             stats.cachedBytes = (UInt64(vm.external_page_count) + purgeablePages) * pageSize
             stats.freeBytes = (freePages > speculativePages ? freePages - speculativePages : 0) * pageSize
+            let fileBackedBytes = UInt64(vm.external_page_count) * pageSize
+            stats.usedBytes = totalBytes > stats.freeBytes + fileBackedBytes ? totalBytes - stats.freeBytes - fileBackedBytes : 0
         }
 
         if let swap = Sysctl.value("vm.swapusage", initial: xsw_usage()) {
