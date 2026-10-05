@@ -30,6 +30,12 @@
 2. Unzip it and drag **Tally** into your **Applications** folder.
 3. Open Tally. The first time, macOS asks whether you want to open an app downloaded from the internet. Click **Open**.
 
+Or install it with [Homebrew](https://brew.sh):
+
+```bash
+brew install --cask dheerajkoppu/tap/tally
+```
+
 Tally is signed with an Apple Developer ID and notarized, so Apple has checked every release for malicious software.
 
 Tally needs macOS 15 Sequoia or later and runs on both Apple silicon and Intel Macs. Sensor and power readings are richer on Apple silicon.
