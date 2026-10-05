@@ -57,3 +57,4 @@ echo
 echo "To publish:"
 echo "  git tag v$VERSION && git push origin v$VERSION"
 echo "  gh release create v$VERSION $ZIP --title \"Tally $VERSION\" --generate-notes"
+echo "  ./scripts/update-cask.sh"
