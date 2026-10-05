@@ -537,6 +537,46 @@ public struct UsageTotals: Hashable, Sendable {
     public init() {}
 }
 
+/// A calendar year of history summed up, for Tally Wrapped.
+public struct YearSummary: Hashable, Sendable {
+    public var year: Int
+    /// The first and last moments with history in the year.
+    public var firstDate: Date
+    public var lastDate: Date
+    /// Seconds Tally was sampling: the Mac awake with Tally running.
+    public var activeSeconds: Double = 0
+    public var activeDays = 0
+    /// Hours sampled in each month, January first.
+    public var monthlyHours = [Double](repeating: 0, count: 12)
+    /// 0...100
+    public var cpuAverage: Double = 0
+    /// The day with the highest average CPU, and that average.
+    public var busiestDay: Date?
+    public var busiestDayCPU: Double = 0
+    /// The hour of the day, 0...23, with the highest average CPU.
+    public var busiestHour: Int?
+    public var hottestCelsius: Double?
+    public var networkInBytes: UInt64 = 0
+    public var networkOutBytes: UInt64 = 0
+    public var diskWrittenBytes: UInt64 = 0
+    /// Apps and tools with history in the year, not counting macOS itself.
+    public var appCount = 0
+    /// The apps with the most CPU time, in seconds of one core.
+    public var topByCPU: [HistoryAppTotal] = []
+    /// The app that held the most memory on average, in bytes.
+    public var topByMemory: HistoryAppTotal?
+    /// The app that moved the most data, in bytes down and up.
+    public var topByNetwork: HistoryAppTotal?
+    /// The app that used the most energy, in watt-hours.
+    public var topByEnergy: HistoryAppTotal?
+
+    public init(year: Int, firstDate: Date, lastDate: Date) {
+        self.year = year
+        self.firstDate = firstDate
+        self.lastDate = lastDate
+    }
+}
+
 // MARK: - Alerts
 
 public enum AlertKind: String, Hashable, Sendable, Codable {

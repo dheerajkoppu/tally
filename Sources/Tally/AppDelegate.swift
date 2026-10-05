@@ -28,6 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         let history = HistoryStore(directory: historyDirectory)
         let alerts = AlertEngine()
         store.history = history
+        WrappedModel.shared.refresh()
         store.alertEvaluator = alerts
 
         let engine = SamplingEngine(
@@ -113,13 +114,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
         AppRouter.shared.isExportPresented = true
     }
 
+    @objc func showWrapped(_ sender: Any?) {
+        windows.showMain()
+        AppRouter.shared.isWrappedPresented = true
+    }
+
     @objc func selectTab(_ sender: NSMenuItem) {
         guard let tab = sender.representedObject as? String, let value = TallyTab(rawValue: tab) else { return }
         AppRouter.shared.open(value)
     }
 
-    /// Checks the tab the main window shows. Runs only while a menu is open.
+    /// Checks the tab the main window shows and offers Tally Wrapped in season. Runs only while a menu is open.
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.action == #selector(showWrapped(_:)) {
+            menuItem.isHidden = WrappedModel.shared.summary == nil
+        }
         if menuItem.action == #selector(selectTab(_:)) {
             let isCurrent = (menuItem.representedObject as? String) == AppRouter.shared.tab.rawValue
             menuItem.state = isCurrent ? .on : .off

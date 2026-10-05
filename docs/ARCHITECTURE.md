@@ -10,7 +10,7 @@ Tally is a Swift package: a native SwiftUI and AppKit app for macOS 15 and later
 | `TallySystem`     | `SystemSampler`: CPU, memory, disk, network, GPU and battery                                  |
 | `TallyProcesses`  | `ProcessSampler`: every process, per-process rates, and grouping processes into apps          |
 | `TallySensors`    | `SensorReader`: temperatures, fans and peripheral batteries                                   |
-| `TallyHistory`    | `HistoryStore` (SQLite, 30 days) and `AlertEngine` (notifications)                            |
+| `TallyHistory`    | `HistoryStore` (SQLite, kept for good) and `AlertEngine` (notifications)                      |
 | `TallyProjects`   | `ProjectScanner` and `ProjectsView`: dev servers and open ports by project folder             |
 | `TallyDashboard`  | `OverviewView`, `MetricTabView`, `SensorsView` and `AppInspectorView`                         |
 | `TallyMenuBar`    | `StatusItemController` and `MenuBarPanelView`                                                 |

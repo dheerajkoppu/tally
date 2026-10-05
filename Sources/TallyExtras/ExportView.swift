@@ -3,12 +3,14 @@ import AppKit
 import UniformTypeIdentifiers
 import TallyCore
 
-/// The two images Tally can export.
+/// The images Tally can export.
 public enum ExportImageKind: String, CaseIterable, Identifiable, Sendable {
     /// 16:9 at twice the point size, for posts.
     case shareCard
     /// Every subsystem and the top apps, at twice the point size.
     case dashboard
+    /// The year summed up, offered while Tally Wrapped is in season.
+    case wrapped
 
     public var id: String { rawValue }
 
@@ -16,6 +18,7 @@ public enum ExportImageKind: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .shareCard: "Share Card"
         case .dashboard: "Dashboard"
+        case .wrapped: "Wrapped"
         }
     }
 
@@ -24,6 +27,7 @@ public enum ExportImageKind: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .shareCard: ShareCardView.size
         case .dashboard: DashboardImageView.size
+        case .wrapped: WrappedCardView.size
         }
     }
 
@@ -37,6 +41,7 @@ public enum ExportImageKind: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .shareCard: return "\(dimensions) showing memory, CPU and the busiest apps, sized for sharing."
         case .dashboard: return "\(dimensions) of every metric and the apps behind them."
+        case .wrapped: return "\(dimensions) of your Mac's year and the apps that filled it."
         }
     }
 }
@@ -78,11 +83,13 @@ public enum ExportRenderer {
         switch kind {
         case .shareCard: ShareCardView(date: date)
         case .dashboard: DashboardImageView(date: date)
+        case .wrapped: WrappedCardView()
         }
     }
 
-    /// "Tally 2026-09-24 at 14.32.05.png", like macOS screenshots.
-    static func fileName(for date: Date) -> String {
+    /// "Tally 2026-09-24 at 14.32.05.png", like macOS screenshots, or "Tally Wrapped 2026.png".
+    static func fileName(for kind: ExportImageKind, date: Date) -> String {
+        if kind == .wrapped, let year = WrappedModel.shared.summary?.year { return "Tally Wrapped \(year).png" }
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
@@ -97,12 +104,15 @@ public struct ExportView: View {
     @Environment(\.colorScheme) private var environmentScheme
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var kind: ExportImageKind = .shareCard
+    @ObservedObject private var wrapped = WrappedModel.shared
+    @State private var kind: ExportImageKind
     @State private var scheme: ColorScheme?
     @State private var rendered: RenderedExport?
     @State private var feedback: Feedback?
 
-    public init() {}
+    public init(kind: ExportImageKind = .shareCard) {
+        _kind = State(initialValue: kind)
+    }
 
     /// Tall enough for the 16:9 share card to fill the width.
     private static let previewHeight: CGFloat = 397
@@ -120,7 +130,7 @@ public struct ExportView: View {
                 }
                 Spacer(minLength: 12)
                 Picker("Image", selection: $kind) {
-                    ForEach(ExportImageKind.allCases) { kind in
+                    ForEach(ExportImageKind.allCases.filter { $0 != .wrapped || wrapped.summary != nil }) { kind in
                         Text(kind.title).tag(kind)
                     }
                 }
@@ -171,7 +181,8 @@ public struct ExportView: View {
                 .accessibilityHidden(true)
         }
         .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: feedback)
-        .task(id: RenderKey(kind: kind, scheme: resolvedScheme)) {
+        .task(id: RenderKey(kind: kind, scheme: resolvedScheme, summary: wrapped.summary)) {
+            wrapped.refresh()
             render()
         }
     }
@@ -253,7 +264,7 @@ public struct ExportView: View {
         guard let rendered, let png = NSBitmapImageRep(cgImage: rendered.image).representation(using: .png, properties: [:]) else { return }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.png]
-        panel.nameFieldStringValue = ExportRenderer.fileName(for: rendered.date)
+        panel.nameFieldStringValue = ExportRenderer.fileName(for: rendered.kind, date: rendered.date)
         panel.canCreateDirectories = true
         panel.isExtensionHidden = false
         panel.directoryURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first
@@ -287,6 +298,8 @@ public struct ExportView: View {
 private struct RenderKey: Hashable {
     var kind: ExportImageKind
     var scheme: ColorScheme
+    /// The Wrapped card is drawn again when its year finishes loading.
+    var summary: YearSummary?
 }
 
 private struct RenderedExport {

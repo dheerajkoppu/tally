@@ -32,6 +32,9 @@ enum MainMenu {
         // Shift-Command-E, since Command-E is the standard Use Selection for Find.
         let export = fileMenu.addItem(withTitle: "Export Image…", action: #selector(AppDelegate.showExport(_:)), keyEquivalent: "e")
         export.keyEquivalentModifierMask = [.command, .shift]
+        // Shown by the app delegate while Tally Wrapped is in season.
+        let wrapped = fileMenu.addItem(withTitle: "Tally Wrapped…", action: #selector(AppDelegate.showWrapped(_:)), keyEquivalent: "")
+        wrapped.isHidden = true
         fileMenu.addItem(.separator())
         fileMenu.addItem(withTitle: "Close", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         addSubmenu(fileMenu, to: mainMenu)

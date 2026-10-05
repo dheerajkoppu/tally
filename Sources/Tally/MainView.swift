@@ -54,10 +54,22 @@ struct MainView: View {
         .toolbar(removing: .title)
         // One sheet at a time: asking for one replaces the other rather than queueing behind it.
         .onChange(of: router.isExportPresented) { _, isPresented in
-            if isPresented { router.inspectedAppID = nil }
+            if isPresented {
+                router.inspectedAppID = nil
+                router.isWrappedPresented = false
+            }
+        }
+        .onChange(of: router.isWrappedPresented) { _, isPresented in
+            if isPresented {
+                router.inspectedAppID = nil
+                router.isExportPresented = false
+            }
         }
         .onChange(of: router.inspectedAppID) { _, appID in
-            if appID != nil { router.isExportPresented = false }
+            if appID != nil {
+                router.isExportPresented = false
+                router.isWrappedPresented = false
+            }
         }
         .sheet(item: presentedSheet) { sheet in
             switch sheet {
@@ -66,6 +78,9 @@ struct MainView: View {
                     .allowsQuittingWhilePresented()
             case .export:
                 ExportView()
+                    .allowsQuittingWhilePresented()
+            case .wrapped:
+                ExportView(kind: .wrapped)
                     .allowsQuittingWhilePresented()
             }
         }
@@ -89,11 +104,13 @@ struct MainView: View {
     private var presentedSheet: Binding<MainSheet?> {
         Binding(
             get: {
+                if router.isWrappedPresented { return .wrapped }
                 if router.isExportPresented { return .export }
                 return router.inspectedAppID.map(MainSheet.inspector)
             },
             set: { sheet in
                 router.isExportPresented = sheet == .export
+                router.isWrappedPresented = sheet == .wrapped
                 if case .inspector(let appID) = sheet { router.inspectedAppID = appID } else { router.inspectedAppID = nil }
             }
         )
@@ -103,6 +120,7 @@ struct MainView: View {
 private enum MainSheet: Identifiable, Hashable {
     case inspector(String)
     case export
+    case wrapped
 
     var id: Self { self }
 }

@@ -52,7 +52,7 @@ There's no automated UI test suite yet (help welcome). These tools make checking
 swift run probe-system      # CPU, memory, disk, network, GPU, battery
 swift run probe-processes   # every process, grouped into apps
 swift run probe-sensors     # temperatures, fans, peripheral batteries
-swift run probe-history     # the 30-day history database
+swift run probe-history     # the history database
 swift run probe-projects    # dev servers and ports by project
 ```
 

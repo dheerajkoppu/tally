@@ -38,7 +38,8 @@ Tally needs macOS 15 Sequoia or later and runs on both Apple silicon and Intel M
 
 - **Apps, not processes.** Helper processes (renderers, GPU helpers, plugins, language servers) count toward the app that started them. One row per app, with its totals for CPU, memory, power, disk and network.
 - **Separate views for each part of your Mac.** CPU, memory, disk, network, GPU and battery, each with a live chart and a ranked list of the apps driving it. Memory figures match Activity Monitor.
-- **A month of history.** Scroll back to see what was busy while you were away, and which apps were responsible. It all lives in a single local database.
+- **A month of history.** Scroll back to see what was busy while you were away, and which apps were responsible. It all lives in a single local database, kept until you clear it.
+- **Tally Wrapped.** Each December, your Mac's year in one image: the hours it was awake, the apps that worked it hardest and a few highlights. Yours to keep or share.
 - **Alerts for runaway apps.** Get a heads-up when something pins the CPU, leaks memory, or won't stop writing to disk.
 - **Local servers by project.** Servers and listening ports are filed under the repo they run from. Forgotten ones that haven't done anything in days get flagged, with a stop button that asks before it acts.
 - **Menu bar monitor.** Choose a symbol, a live number, a mini chart or a stack of readings. Click it for the full picture.

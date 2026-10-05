@@ -87,6 +87,8 @@ public final class AppSettings: ObservableObject {
     @Published public var networkAlertMBps: Double { didSet { defaults.set(networkAlertMBps, forKey: "networkAlertMBps") } }
 
     @Published public var hasCompletedWelcome: Bool { didSet { defaults.set(hasCompletedWelcome, forKey: "hasCompletedWelcome") } }
+    /// The year whose Tally Wrapped invitation was dismissed from Overview.
+    @Published public var dismissedWrappedYear: Int { didSet { defaults.set(dismissedWrappedYear, forKey: "dismissedWrappedYear") } }
     /// Seconds between samples while a window or the menu bar panel is open. One of `updateIntervalChoices`.
     @Published public var updateInterval: Double { didSet { defaults.set(updateInterval, forKey: "updateInterval") } }
 
@@ -111,6 +113,7 @@ public final class AppSettings: ObservableObject {
         diskAlertMBps = defaults.object(forKey: "diskAlertMBps") as? Double ?? 50
         networkAlertMBps = defaults.object(forKey: "networkAlertMBps") as? Double ?? 10
         hasCompletedWelcome = defaults.bool(forKey: "hasCompletedWelcome")
+        dismissedWrappedYear = defaults.integer(forKey: "dismissedWrappedYear")
         updateInterval = defaults.object(forKey: "updateInterval") as? Double ?? 5
     }
 
