@@ -34,7 +34,7 @@
     <meta property="og:url" content="https://dheerajkoppu.github.io/tally/" />
     <meta
       property="og:image"
-      content="https://dheerajkoppu.github.io/tally/assets/og.png?v=2"
+      content="https://dheerajkoppu.github.io/tally/assets/og.png?v=3"
     />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/png" href="assets/favicon.png" />
@@ -236,7 +236,11 @@
         position: absolute;
         inset: 0;
         z-index: -1;
-        background: linear-gradient(to bottom, var(--hero-background), var(--background) 70%);
+        background: linear-gradient(
+          to bottom,
+          var(--hero-background),
+          var(--background) 70%
+        );
       }
       .hero h1 {
         font-size: clamp(38px, 6vw, 64px);
@@ -308,6 +312,85 @@
       }
       .store-button.dark:hover {
         background: var(--button-dark-hover);
+      }
+      .brew {
+        display: flex;
+        align-items: center;
+        width: fit-content;
+        max-width: 100%;
+        margin: 20px auto 0;
+        padding: 4px 4px 4px 18px;
+        border-radius: 999px;
+        background: var(--frame);
+        box-shadow: 0 0 0 1px var(--line);
+        font-size: 14px;
+        text-align: left;
+      }
+      .brew-label {
+        flex: none;
+        margin-right: 12px;
+        padding-right: 12px;
+        border-right: 1px solid var(--line);
+        color: var(--muted);
+      }
+      .brew code {
+        min-width: 0;
+        white-space: nowrap;
+        font:
+          13px/1.4 ui-monospace,
+          "SF Mono",
+          Menlo,
+          monospace;
+        user-select: all;
+        -webkit-user-select: all;
+      }
+      .brew code:last-child {
+        margin-right: 14px;
+      }
+      .brew-copy {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        margin-left: 8px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: none;
+        color: var(--muted);
+        cursor: pointer;
+        transition:
+          background-color 0.15s ease,
+          color 0.15s ease;
+      }
+      .brew-copy:hover {
+        background: color-mix(in srgb, var(--foreground) 8%, transparent);
+        color: var(--foreground);
+      }
+      .brew-copy svg {
+        width: 16px;
+        height: 16px;
+      }
+      .brew-copy .check,
+      .brew-copy.copied .copy {
+        display: none;
+      }
+      .brew-copy.copied .check {
+        display: block;
+        color: var(--highlight);
+      }
+      @media (max-width: 560px) {
+        .brew {
+          padding: 6px 6px 6px 16px;
+          border-radius: 16px;
+        }
+        .brew-label {
+          display: none;
+        }
+        .brew code {
+          white-space: normal;
+        }
       }
       .hero-note {
         margin-top: 16px;
@@ -450,7 +533,10 @@
         font-size: 16px;
         color: var(--muted);
       }
-      .benefit-media .frame { max-width: 520px; margin-inline: auto; }
+      .benefit-media .frame {
+        max-width: 520px;
+        margin-inline: auto;
+      }
       .benefit-media .frame.narrow {
         max-width: 380px;
         border-radius: 16px;
@@ -515,7 +601,10 @@
       .faq-intro h2 {
         margin-top: 12px;
       }
-      .faq-intro h2 + p { margin-top: 16px; color: var(--muted); }
+      .faq-intro h2 + p {
+        margin-top: 16px;
+        color: var(--muted);
+      }
       .faq-intro a {
         color: var(--highlight);
       }
@@ -558,6 +647,14 @@
       }
       details .answer p + p {
         margin-top: 12px;
+      }
+      details .answer code {
+        font:
+          0.88em ui-monospace,
+          "SF Mono",
+          Menlo,
+          monospace;
+        color: var(--foreground);
       }
       @media (max-width: 860px) {
         .faq-grid {
@@ -614,6 +711,24 @@
       }
       .cta-panel .store-button.dark:hover {
         background: #ffffff;
+      }
+      .cta-panel .brew {
+        background: #2a2a2c;
+        box-shadow: 0 0 0 1px #ffffff14;
+      }
+      .cta-panel .brew-label {
+        border-color: #ffffff1f;
+        color: #a1a1a6;
+      }
+      .cta-panel .brew-copy {
+        color: #a1a1a6;
+      }
+      .cta-panel .brew-copy:hover {
+        background: #ffffff14;
+        color: #f5f5f7;
+      }
+      .cta-panel .brew-copy.copied .check {
+        color: #8d8bff;
       }
       .cta-panel .hero-note {
         color: #86868b;
@@ -732,7 +847,8 @@
           <h1>See which <span>apps</span> are really using your Mac</h1>
           <p class="subheading">
             Tally counts every helper process toward the app it belongs to, so a
-            thousand processes become a list of apps you recognize. Free, open source, and nothing leaves your Mac.
+            thousand processes become a list of apps you recognize. Free, open
+            source, and nothing leaves your Mac.
           </p>
           <div class="store-buttons">
             <a
@@ -763,9 +879,44 @@
               >
             </a>
           </div>
-          <p class="hero-note">
-            macOS 15 or later · Apple silicon and Intel
-          </p>
+          <div class="brew">
+            <span class="brew-label">Homebrew</span>
+            <code>brew install --cask dheerajkoppu/tap/tally</code>
+            <button
+              class="brew-copy"
+              type="button"
+              aria-label="Copy the Homebrew command"
+            >
+              <svg
+                class="copy"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="5.5" y="5.5" width="8" height="8" rx="1.75" />
+                <path
+                  d="M10.5 5.5V4.25A1.75 1.75 0 0 0 8.75 2.5h-4.5A1.75 1.75 0 0 0 2.5 4.25v4.5c0 .97.78 1.75 1.75 1.75H5.5"
+                />
+              </svg>
+              <svg
+                class="check"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m3.5 8.5 3 3 6-7" />
+              </svg>
+            </button>
+          </div>
+          <p class="hero-note">macOS 15 or later · Apple silicon and Intel</p>
           <div class="hero-shot">
             <div class="frame">
               <div class="frame-bar" aria-hidden="true">
@@ -810,7 +961,9 @@
                 />
                 <img
                   src="assets/memory-light.png"
-                  width="1240" height="1621" alt="Tally's Memory tab: memory in use over time and a list of apps ranked by memory, each with its process count"
+                  width="1240"
+                  height="1621"
+                  alt="Tally's Memory tab: memory in use over time and a list of apps ranked by memory, each with its process count"
                 />
               </picture>
             </div>
@@ -1000,7 +1153,9 @@
                 />
                 <img
                   src="assets/network-light.png"
-                  width="1240" height="1920" alt="Tally's Network tab: download speed over time, upload, weekly total, and Ethernet and Wi-Fi listed separately with their speeds and link rates"
+                  width="1240"
+                  height="1920"
+                  alt="Tally's Network tab: download speed over time, upload, weekly total, and Ethernet and Wi-Fi listed separately with their speeds and link rates"
                 />
               </picture>
             </div>
@@ -1008,7 +1163,8 @@
           <div class="reveal">
             <h2>Ethernet and Wi‑Fi, side by side</h2>
             <p class="lead">
-              Plugged in and on Wi‑Fi at the same time? Each connection gets its own row, so you can see which one is doing the work.
+              Plugged in and on Wi‑Fi at the same time? Each connection gets its
+              own row, so you can see which one is doing the work.
             </p>
             <ul class="bullets">
               <li>
@@ -1093,7 +1249,9 @@
                 />
                 <img
                   src="assets/sensors-light.png"
-                  width="1240" height="1365" alt="Tally's Sensors tab: CPU and GPU temperature with their recent history, every temperature sensor with a meter, and the batteries of connected devices"
+                  width="1240"
+                  height="1365"
+                  alt="Tally's Sensors tab: CPU and GPU temperature with their recent history, every temperature sensor with a meter, and the batteries of connected devices"
                 />
               </picture>
             </div>
@@ -1187,7 +1345,9 @@
                 />
                 <img
                   src="assets/projects-light.png"
-                  width="1240" height="404" alt="Tally's Projects tab: three local servers listed by project folder, with their ports and memory"
+                  width="1240"
+                  height="404"
+                  alt="Tally's Projects tab: three local servers listed by project folder, with their ports and memory"
                 />
               </picture>
             </div>
@@ -1454,7 +1614,8 @@
               <div>
                 <h3>Online only when you ask</h3>
                 <p>
-                  No license server, no crash reporter, no background pings. Tally only reaches GitHub when you choose Check for Updates.
+                  No license server, no crash reporter, no background pings.
+                  Tally only reaches GitHub when you choose Check for Updates.
                 </p>
               </div>
             </li>
@@ -1532,10 +1693,10 @@
               <summary>Is Tally safe to open?</summary>
               <div class="answer">
                 <p>
-                  Yes. Tally is signed with an Apple Developer ID and
-                  notarized, so Apple has checked every release for malicious
-                  software. The first time you open it, macOS asks whether you
-                  want to open an app downloaded from the internet. Click Open.
+                  Yes. Tally is signed with an Apple Developer ID and notarized,
+                  so Apple has checked every release for malicious software. The
+                  first time you open it, macOS asks whether you want to open an
+                  app downloaded from the internet. Click Open.
                 </p>
               </div>
             </details>
@@ -1554,7 +1715,11 @@
               <summary>Does it send anything anywhere?</summary>
               <div class="answer">
                 <p>
-                  No. The only time Tally goes online is when you choose Check for Updates, which asks GitHub for the latest version number and downloads that version if you choose to install it. Nothing about your Mac is sent, and your history stays in one file on your Mac.
+                  No. The only time Tally goes online is when you choose Check
+                  for Updates, which asks GitHub for the latest version number
+                  and downloads that version if you choose to install it.
+                  Nothing about your Mac is sent, and your history stays in one
+                  file on your Mac.
                 </p>
               </div>
             </details>
@@ -1581,10 +1746,28 @@
               </div>
             </details>
             <details>
+              <summary>Can I install it with Homebrew?</summary>
+              <div class="answer">
+                <p>
+                  Yes. Run
+                  <code>brew install --cask dheerajkoppu/tap/tally</code> in
+                  Terminal. You get the same signed and notarized app as the
+                  download. Tally still updates itself from Check for Updates,
+                  so <code>brew upgrade</code> leaves it alone unless you add
+                  <code>--greedy</code>.
+                </p>
+              </div>
+            </details>
+            <details>
               <summary>How do I update?</summary>
               <div class="answer">
                 <p>
-                  Choose Tally › Check for Updates…. If there's a new version, Tally offers to install it: it downloads the release from GitHub, checks that it's signed and notarized, replaces itself and reopens. Your history and settings stay. Tally never checks on its own. Versions before 1.1.1 take you to the download instead.
+                  Choose Tally › Check for Updates…. If there's a new version,
+                  Tally offers to install it: it downloads the release from
+                  GitHub, checks that it's signed and notarized, replaces itself
+                  and reopens. Your history and settings stay. Tally never
+                  checks on its own. Versions before 1.1.1 take you to the
+                  download instead.
                 </p>
               </div>
             </details>
@@ -1630,6 +1813,43 @@
                 >
               </a>
             </div>
+            <div class="brew">
+              <span class="brew-label">Homebrew</span>
+              <code>brew install --cask dheerajkoppu/tap/tally</code>
+              <button
+                class="brew-copy"
+                type="button"
+                aria-label="Copy the Homebrew command"
+              >
+                <svg
+                  class="copy"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="5.5" y="5.5" width="8" height="8" rx="1.75" />
+                  <path
+                    d="M10.5 5.5V4.25A1.75 1.75 0 0 0 8.75 2.5h-4.5A1.75 1.75 0 0 0 2.5 4.25v4.5c0 .97.78 1.75 1.75 1.75H5.5"
+                  />
+                </svg>
+                <svg
+                  class="check"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m3.5 8.5 3 3 6-7" />
+                </svg>
+              </button>
+            </div>
             <p class="hero-note">8 MB · macOS 15 or later</p>
           </div>
         </div>
@@ -1657,6 +1877,11 @@
                 <a
                   href="https://github.com/dheerajkoppu/tally/releases/latest/download/Tally.zip"
                   >Download</a
+                >
+              </li>
+              <li>
+                <a href="https://github.com/dheerajkoppu/homebrew-tap"
+                  >Homebrew</a
                 >
               </li>
               <li>
@@ -1721,6 +1946,25 @@
           element.classList.add("visible");
         });
       }
+
+      document.querySelectorAll(".brew-copy").forEach(function (button) {
+        if (!navigator.clipboard) {
+          button.remove();
+          return;
+        }
+        var label = button.getAttribute("aria-label");
+        button.addEventListener("click", function () {
+          var command = button.previousElementSibling.textContent;
+          navigator.clipboard.writeText(command).then(function () {
+            button.classList.add("copied");
+            button.setAttribute("aria-label", "Copied");
+            setTimeout(function () {
+              button.classList.remove("copied");
+              button.setAttribute("aria-label", label);
+            }, 1600);
+          });
+        });
+      });
     </script>
   </body>
 </html>
