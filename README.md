@@ -62,7 +62,7 @@ A system monitor shouldn't show up in its own list of busy apps. Tally refreshes
 
 ## Privacy
 
-Tally only goes online when you choose **Check for Updates**, which asks GitHub for the latest version number. There's no account, no analytics and no background connections. Your apps, history and project names stay on your Mac. The code is all here, so you can check.
+Tally only goes online when you choose **Check for Updates**, which asks GitHub for the latest version number and downloads that version if you choose to install it. There's no account, no analytics and no background connections. Your apps, history and project names stay on your Mac. The code is all here, so you can check.
 
 It asks for these permissions, and only when you use the feature that needs them:
 
@@ -74,7 +74,9 @@ It asks for these permissions, and only when you use the feature that needs them
 
 ## Updating
 
-Choose **Tally › Check for Updates…** (it's also in Settings › About). If there's a new version, Tally takes you to the download. Replace the copy in Applications and your history and settings stay. Tally never checks on its own.
+Choose **Tally › Check for Updates…** (it's also in Settings › About). If there's a new version, Tally offers to install it: it downloads the release from GitHub, checks that it's signed by the same developer and notarized by Apple, replaces itself and reopens. Your history and settings stay. Tally never checks on its own.
+
+Versions before 1.1.1, and copies you built yourself, take you to the download instead. Replace the copy in Applications.
 
 ## Build from source
 
