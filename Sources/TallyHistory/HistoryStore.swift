@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 import TallyCore
 
-/// 30 days of history in one SQLite file.
+/// History in one SQLite file, kept until it is cleared.
 ///
 /// `record` adds each sample to the minute in progress and hands a finished minute to the database queue,
 /// so it stays well under a millisecond and the file is written about once a minute. Queries read the file and add
@@ -254,6 +254,19 @@ public final class HistoryStore: HistoryProviding, SystemHistoryRecording {
             totals.gpuPeakToday = row.gpuPeakToday
             return totals
         }
+    }
+
+    public func yearSummary(year: Int) -> YearSummary? {
+        let calendar = Calendar.current
+        guard let start = calendar.date(from: DateComponents(year: year)),
+              let end = calendar.date(from: DateComponents(year: year + 1)) else { return nil }
+        // Days and hours of the day are placed by today's offset from UTC, so daylight saving moves some by an hour.
+        let offset = Int64(calendar.timeZone.secondsFromGMT())
+        let bounds = (Int64(start.timeIntervalSince1970), Int64(end.timeIntervalSince1970))
+        let (hours, apps) = queue.sync {
+            (database.yearHours(from: bounds.0, to: bounds.1, offset: offset), database.yearApps(from: bounds.0, to: bounds.1))
+        }
+        return YearSummary.make(year: year, hours: hours, apps: apps, offset: offset, calendar: calendar)
     }
 
     public func clearAll() {

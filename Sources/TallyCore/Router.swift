@@ -30,6 +30,8 @@ public final class AppRouter: ObservableObject {
     /// The app whose processes are shown in the detail sheet, if any.
     @Published public var inspectedAppID: String?
     @Published public var isExportPresented = false
+    /// The export sheet opened on the Tally Wrapped card.
+    @Published public var isWrappedPresented = false
 
     /// Installed by the app target.
     public var showMainWindow: () -> Void = {}

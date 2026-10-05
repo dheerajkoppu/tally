@@ -20,7 +20,7 @@ public protocol SensorSampling: AnyObject {
     func read() -> SensorStats
 }
 
-/// 30 days of history, stored on disk.
+/// History, stored on disk until it is cleared.
 public protocol HistoryProviding: AnyObject {
     /// Called on every engine tick. Implementations aggregate in memory and write about once a minute.
     func record(snapshot: SystemSnapshot, apps: [AppUsage])
@@ -31,6 +31,8 @@ public protocol HistoryProviding: AnyObject {
     /// One app's history for a metric. Safe to call from any thread.
     func appSeries(appID: String, metric: HistoryMetric, range: HistoryRange, buckets: Int) -> [HistoryPoint]
     func totals() -> UsageTotals
+    /// A calendar year summed up, or nil without history in it. Reads the whole year, so call it off the main thread.
+    func yearSummary(year: Int) -> YearSummary?
     func clearAll()
 }
 

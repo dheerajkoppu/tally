@@ -23,9 +23,13 @@ struct TotalsRow {
 /// The history file. Every method must be called on the history store's serial queue.
 final class HistoryDatabase {
     static let schemaVersion: Int64 = 1
-    static let retention: Int64 = 30 * 86400
     /// Minute rows per app are kept long enough for the 24 hour range; older ranges read hourly rows.
     static let appMinuteRetention: Int64 = 50 * 3600
+    /// The longest chart range. Whole-Mac minutes and hourly rows per app outlive it and are kept for good, except
+    /// that past it an app needs at least `lastingAppHours` hourly rows to stay: one-off tools (build products,
+    /// temporary binaries) would otherwise fill the file with their paths.
+    static let chartRetention: Int64 = 30 * 86400
+    static let lastingAppHours: Int64 = 3
     static let pruneInterval: Int64 = 3600
     static let vacuumInterval: Double = 7 * 86400
     static let appsPerMetric = 15
@@ -320,23 +324,35 @@ final class HistoryDatabase {
         return identifier
     }
 
-    /// Drops rows past their retention, relative to `now` (Unix seconds).
+    /// Drops what is not kept for good, relative to `now` (Unix seconds): per-app minutes past their retention and
+    /// apps that came and went before the chart ranges begin.
     func prune(now: Int64) {
         guard let database else { return }
         lastPrune = now
-        let statements: [(String, Int64)] = [
-            ("DELETE FROM system_minute WHERE minute < ?1", now - Self.retention),
-            ("DELETE FROM app_minute WHERE minute < ?1", now - Self.appMinuteRetention),
-            ("DELETE FROM app_hour WHERE hour < ?1", ((now - Self.retention) / 3600) * 3600),
-        ]
+        let chartStart = ((now - Self.chartRetention) / 3600) * 3600
         database.execute("BEGIN IMMEDIATE")
-        for (sql, cutoff) in statements {
-            guard let statement = database.prepared(sql) else { continue }
-            statement.bind(cutoff, at: 1)
-            statement.run()
+        if let minutes = database.prepared("DELETE FROM app_minute WHERE minute < ?1") {
+            minutes.bind(now - Self.appMinuteRetention, at: 1)
+            minutes.run()
         }
+        // Only an app with an hour that left the chart ranges since the last pass can have become a passing one.
+        let passingSQL = """
+        DELETE FROM app_hour WHERE app_id IN (
+            SELECT app_id FROM app_hour
+            WHERE app_id IN (SELECT app_id FROM app_hour WHERE hour >= ?1 AND hour < ?2)
+            GROUP BY app_id HAVING COUNT(*) < ?3 AND MAX(hour) < ?2
+        )
+        """
+        if let passing = database.prepared(passingSQL) {
+            passing.bind(Int64(metaValue("compacted_through", in: database) ?? 0), at: 1)
+            passing.bind(chartStart, at: 2)
+            passing.bind(Self.lastingAppHours, at: 3)
+            if passing.run() { setMeta("compacted_through", Double(chartStart), in: database) }
+        }
+        // Probes each app's index entries rather than reading every hourly row ever kept.
         database.execute("""
-        DELETE FROM apps WHERE id NOT IN (SELECT app_id FROM app_hour) AND id NOT IN (SELECT app_id FROM app_minute)
+        DELETE FROM apps WHERE NOT EXISTS (SELECT 1 FROM app_hour WHERE app_id = apps.id)
+            AND NOT EXISTS (SELECT 1 FROM app_minute WHERE app_id = apps.id)
         """)
         if !database.execute("COMMIT") { database.execute("ROLLBACK") }
         appIDs.removeAll()
@@ -527,6 +543,61 @@ final class HistoryDatabase {
             row.gpuPeakToday = statement.double(at: 8)
         }
         return row
+    }
+
+    /// Whole-Mac history in [start, end) by the hour, with hours counted in local time, `offset` seconds from UTC.
+    func yearHours(from start: Int64, to end: Int64, offset: Int64) -> [YearHourRow] {
+        let sql = """
+        SELECT (minute + ?3) / 3600 AS hour, SUM(seconds), SUM(cpu * seconds), MAX(cpu_temperature),
+            SUM(network_in), SUM(network_out), SUM(disk_write), MIN(minute), MAX(minute)
+        FROM system_minute WHERE minute >= ?1 AND minute < ?2 GROUP BY hour
+        """
+        guard let database, let statement = database.prepared(sql) else { return [] }
+        statement.bind(start, at: 1)
+        statement.bind(end, at: 2)
+        statement.bind(offset, at: 3)
+        var rows: [YearHourRow] = []
+        statement.forEachRow {
+            rows.append(YearHourRow(
+                hour: statement.int64(at: 0),
+                seconds: statement.double(at: 1),
+                cpuSeconds: statement.double(at: 2),
+                hottest: statement.isNull(at: 3) ? nil : statement.double(at: 3),
+                networkIn: statement.double(at: 4),
+                networkOut: statement.double(at: 5),
+                diskWrite: statement.double(at: 6),
+                firstMinute: statement.int64(at: 7),
+                lastMinute: statement.int64(at: 8)
+            ))
+        }
+        return rows
+    }
+
+    /// Every app's sums over the hours in [start, end).
+    func yearApps(from start: Int64, to end: Int64) -> [YearAppRow] {
+        let sql = """
+        SELECT p.key, p.name, p.bundle_path, t.cpu, t.memory, t.power, t.network FROM (
+            SELECT app_id, SUM(cpu) AS cpu, SUM(memory) AS memory, SUM(power) AS power, SUM(network_in + network_out) AS network
+            FROM app_hour WHERE hour >= ?1 AND hour < ?2 GROUP BY +app_id
+        ) t JOIN apps p ON p.id = t.app_id
+        """
+        guard let database, let statement = database.prepared(sql) else { return [] }
+        statement.bind(start, at: 1)
+        statement.bind(end, at: 2)
+        var rows: [YearAppRow] = []
+        statement.forEachRow {
+            guard let key = statement.string(at: 0) else { return }
+            rows.append(YearAppRow(
+                key: key,
+                name: statement.string(at: 1) ?? key,
+                bundlePath: statement.string(at: 2),
+                cpu: statement.double(at: 3),
+                memory: statement.double(at: 4),
+                power: statement.double(at: 5),
+                network: statement.double(at: 6)
+            ))
+        }
+        return rows
     }
 
     private func bind(_ window: BucketWindow, to statement: SQLiteStatement) {

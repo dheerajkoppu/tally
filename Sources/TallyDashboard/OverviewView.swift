@@ -6,12 +6,16 @@ import TallyCore
 public struct OverviewView: View {
     @ObservedObject private var store = TallyStore.shared
     @ObservedObject private var settings = AppSettings.shared
+    @ObservedObject private var wrapped = WrappedModel.shared
 
     public init() {}
 
     public var body: some View {
         let content = OverviewContent(store: store, temperatureUnit: settings.temperatureUnit)
         VStack(alignment: .leading, spacing: Metrics.gridSpacing) {
+            if let summary = wrapped.summary, settings.dismissedWrappedYear != summary.year {
+                OverviewWrappedCard(year: summary.year, hours: Int(summary.activeSeconds / 3600), apps: summary.appCount).equatable()
+            }
             if !content.alerts.isEmpty {
                 OverviewAlertsCard(alerts: content.alerts).equatable()
             }
@@ -38,6 +42,7 @@ public struct OverviewView: View {
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .announcesMemoryPressure(store.snapshot.memory.pressure)
+        .task { wrapped.refresh() }
     }
 }
 

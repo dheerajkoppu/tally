@@ -105,11 +105,11 @@ public struct HistorySettingsPane: View {
                         .textSelection(.enabled)
                 }
                 LabeledContent("Size", value: model.sizeBytes.map { Format.storage($0).text } ?? "–")
-                LabeledContent("Kept For", value: "30 days")
+                LabeledContent("Kept", value: "Forever")
             } header: {
                 Text("Stored on This Mac")
             } footer: {
-                Text("CPU, memory, GPU, disk, network, battery and power, for the whole Mac and for each app, about once a minute. Anything older than 30 days is removed on its own. Nothing leaves this Mac.")
+                Text("CPU, memory, GPU, disk, network, battery and power, for the whole Mac and for each app, about once a minute. It stays until you clear it; apps that only ran briefly are forgotten after 30 days. Nothing leaves this Mac.")
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -131,7 +131,7 @@ public struct HistorySettingsPane: View {
             Button("Clear History", role: .destructive) { model.clear() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This removes up to 30 days of usage history from this Mac. It cannot be undone.")
+            Text("This removes all usage history from this Mac. It cannot be undone.")
         }
     }
 }

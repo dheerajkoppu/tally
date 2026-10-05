@@ -13,7 +13,7 @@ import TallyExtras
 /// the projects inside that folder on the Projects screen, so a shared screenshot does not name private ones.
 @MainActor
 enum RenderHarness {
-    static let names = ["overview", "cpu", "memory", "disk", "network", "gpu", "battery", "sensors", "temperatures", "projects", "popover", "settings", "welcome", "export", "inspector"]
+    static let names = ["overview", "cpu", "memory", "disk", "network", "gpu", "battery", "sensors", "temperatures", "projects", "popover", "settings", "welcome", "export", "wrapped", "inspector"]
 
     static var isRequested: Bool { CommandLine.arguments.contains("--render") }
 
@@ -32,6 +32,7 @@ enum RenderHarness {
 
         try? FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
         engine.beginFastSampling("render")
+        WrappedModel.shared.refresh()
         DispatchQueue.main.asyncAfter(deadline: .now() + wait) {
             if let folder = value(after: "--projects-under").map({ ($0 as NSString).standardizingPath }) {
                 let store = TallyStore.shared
@@ -72,6 +73,10 @@ enum RenderHarness {
             width = 760
         case "export":
             content = AnyView(ExportView())
+            width = 720
+        // The export sheet on the Tally Wrapped card; add --wrapped <year> out of season.
+        case "wrapped":
+            content = AnyView(ExportView(kind: .wrapped))
             width = 720
         case "inspector":
             let appID = TallyStore.shared.apps.first?.id ?? ""
