@@ -2,7 +2,7 @@ import AppKit
 import TallyCore
 
 /// Draws the menu bar item as one image: a template in the normal state so it follows the menu bar,
-/// full colour when the warning sign replaces the stack glyph.
+/// full colour when the warning sign replaces the glyph.
 enum StatusItemArtwork {
     /// Everything the item shows. The image is rebuilt only when this changes.
     struct Content: Equatable {
@@ -35,7 +35,7 @@ enum StatusItemArtwork {
     static let glyphImage: NSImage = {
         let image = NSImage(size: glyphSize, flipped: true) { rect in
             NSColor.black.setFill()
-            NSBezierPath(cgPath: stackPath(in: rect)).fill()
+            NSBezierPath(cgPath: pulsePath(in: rect)).fill()
             return true
         }
         image.isTemplate = true
@@ -44,7 +44,7 @@ enum StatusItemArtwork {
     }()
 
     /// The glyph at the left of the wider styles, built once for the item height.
-    private static let composedGlyph = NSBezierPath(cgPath: stackPath(in: NSRect(x: 0, y: 0, width: glyphSize.width, height: height)))
+    private static let composedGlyph = NSBezierPath(cgPath: pulsePath(in: NSRect(x: 0, y: 0, width: glyphSize.width, height: height)))
 
     private static let warningSymbols: [StrainLevel: NSImage] = {
         var symbols: [StrainLevel: NSImage] = [:]
@@ -169,25 +169,16 @@ enum StatusItemArtwork {
         return image
     }
 
-    /// The pile of tiles from the app icon: three rounded squares stepping down and to the right, the front one cut
-    /// with a 2×2 grid of app cells. Whole-point geometry on a 14 pt grid keeps every edge on the pixel grid at 1x and 2x.
-    static func stackPath(in rect: NSRect) -> CGPath {
+    /// The app icon as a glyph: a rounded square with the activity trace cut out of it. Whole-point geometry and a
+    /// 2 pt trace on a 14 pt grid keep the edges on the pixel grid at 1x and 2x.
+    static func pulsePath(in rect: NSRect) -> CGPath {
         let origin = CGPoint(x: (rect.midX - 7).rounded(.down), y: (rect.midY - 7).rounded(.down))
-        func square(_ offset: CGFloat, outset: CGFloat = 0) -> CGPath {
-            let frame = CGRect(x: origin.x + offset, y: origin.y + offset, width: 10, height: 10).insetBy(dx: -outset, dy: -outset)
-            return CGPath(roundedRect: frame, cornerWidth: 2.5 + outset, cornerHeight: 2.5 + outset, transform: nil)
-        }
-        let cells = CGMutablePath()
-        for row in 0..<2 {
-            for column in 0..<2 {
-                let cell = CGRect(x: origin.x + 6 + CGFloat(column) * 4, y: origin.y + 6 + CGFloat(row) * 4, width: 2, height: 2)
-                cells.addRoundedRect(in: cell, cornerWidth: 0.5, cornerHeight: 0.5)
-            }
-        }
-        // Each square gives up a 1 pt gap around the one in front of it.
-        return square(0).subtracting(square(2, outset: 1))
-            .union(square(2).subtracting(square(4, outset: 1)))
-            .union(square(4).subtracting(cells))
+        let body = CGPath(roundedRect: CGRect(x: origin.x, y: origin.y, width: 14, height: 14), cornerWidth: 3.5, cornerHeight: 3.5, transform: nil)
+        let trace = CGMutablePath()
+        trace.addLines(between: [(3, 8), (4.5, 8), (6, 4), (8, 10), (9.5, 7), (11, 7)].map {
+            CGPoint(x: origin.x + $0.0, y: origin.y + $0.1)
+        })
+        return body.subtracting(trace.copy(strokingWithWidth: 2, lineCap: .round, lineJoin: .round, miterLimit: 4))
     }
 
     private static func drawBars(_ levels: [UInt8], in rect: NSRect, color: NSColor) {

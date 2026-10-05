@@ -3,8 +3,8 @@
 // docs/images/icon.png and docs/images/icon-256.png.
 // Run from the package root: swift scripts/make-icon.swift [--previews <directory>]
 // The geometry and colors match LogoGeometry in Sources/TallyExtras/TallyLogoMark.swift.
+import Foundation
 import ImageIO
-import SwiftUI
 import UniformTypeIdentifiers
 
 struct SRGB {
@@ -27,33 +27,26 @@ struct SRGB {
     }
 }
 
-/// An app tile in the pile, in points of the 1024 canvas (0,0 top left).
-struct Tile {
-    let name: String
-    let center: CGPoint
-    let side: CGFloat
-    let degrees: CGFloat
-    /// The app's metric colour (Palette in Sources/TallyCore/Design/Theme.swift); the system shades it. The amber is
-    /// Disk's high-contrast value, since the standard one turns muddy under the glass.
-    let color: SRGB
-    /// Value in the Mono (clear and tinted) appearances, so the tiles still separate without colour.
-    let mono: Double
-}
-
-let tiles = [
-    Tile(name: "back", center: CGPoint(x: 444.3, y: 444.3), side: 528.4, degrees: -16, color: SRGB(0xE35F91), mono: 0.34),
-    Tile(name: "middle", center: CGPoint(x: 511.6, y: 511.6), side: 528.4, degrees: -8, color: SRGB(0xF2B63A), mono: 0.46),
-    Tile(name: "front", center: CGPoint(x: 597.3, y: 597.3), side: 553.3, degrees: 0, color: SRGB(0x19A070), mono: 0.58),
+/// The turning points of the activity trace, in points of the 1024 canvas (0,0 top left). It runs in from beyond
+/// the left edge, spikes once, settles and ends in a dot.
+let tracePoints = [
+    CGPoint(x: -80, y: 596), CGPoint(x: 172, y: 596), CGPoint(x: 248, y: 646), CGPoint(x: 338, y: 204),
+    CGPoint(x: 430, y: 812), CGPoint(x: 526, y: 438), CGPoint(x: 610, y: 626), CGPoint(x: 688, y: 518),
+    CGPoint(x: 780, y: 566),
 ]
-let tileCornerRatio: CGFloat = 0.25
-/// The 2×2 grid on the front tile, in the proportions of the SF Symbol square.grid.2x2 the app uses for Apps:
-/// each cell a share of the tile side, gaps a fifth of a cell, corners a fifth of a cell.
-let cellRatio: CGFloat = 0.228
-let cellGapRatio: CGFloat = 0.195
-let cellCornerRatio: CGFloat = 0.2
+/// How far each curve's handles reach toward the next turning point; smaller makes sharper peaks.
+let traceHandleRatio: CGFloat = 0.32
+let traceWidth: CGFloat = 38
+let dotRadius: CGFloat = 38
+/// The graph paper behind the trace: this many cells across and down.
+let gridDivisions = 5
+let gridLineWidth: CGFloat = 6
 
-let background = SRGB(0x2C2D31)
-let darkBackground = SRGB(0x1A1B1E)
+/// The app's accent (Palette in Sources/TallyCore/Design/Theme.swift), lifted so it carries on the dark body.
+let traceColor = SRGB(0x6F6DF7)
+let gridColor = SRGB(0x393A41)
+let background = SRGB(0x1F2024)
+let darkBackground = SRGB(0x131417)
 
 struct Fill: Encodable {
     var solid: String?
@@ -111,12 +104,13 @@ struct Group: Encodable {
     let specular: Bool
     let translucency: Translucency
 
-    init(_ tile: Tile, extraLayers: [Layer] = []) {
-        name = tile.name.capitalized
-        layers = extraLayers + [Layer("\(tile.name)-tile", fill: .automatic(tile.color), mono: tile.mono)]
-        shadow = Shadow(kind: "neutral", opacity: 0.7)
-        specular = true
-        // Opaque tiles keep the 27 renderer's edges sharp and the grid crisp.
+    /// - Parameter isRaised: glass with a highlight and a shadow; the grid lies flat on the body instead.
+    init(_ layer: Layer, isRaised: Bool) {
+        name = layer.name.capitalized
+        layers = [layer]
+        shadow = Shadow(kind: isRaised ? "neutral" : "none", opacity: 0.7)
+        specular = isRaised
+        // Opaque layers keep the 27 renderer's edges sharp.
         translucency = Translucency(enabled: false, value: 0)
     }
 }
@@ -142,9 +136,8 @@ let document = IconDocument(
         Specialization(appearance: "dark", value: .automatic(darkBackground)),
     ],
     groups: [
-        Group(tiles[2], extraLayers: [Layer("front-grid", fill: .solid(SRGB(0xFFFFFF)), mono: 1)]),
-        Group(tiles[1]),
-        Group(tiles[0]),
+        Group(Layer("trace", fill: .automatic(traceColor), mono: 1), isRaised: true),
+        Group(Layer("grid", fill: .solid(gridColor), mono: 0.3), isRaised: false),
     ],
     supportedPlatforms: .init(squares: ["macOS"])
 )
@@ -177,11 +170,15 @@ func pathData(_ path: CGPath) -> String {
     return commands.joined(separator: " ")
 }
 
-func roundedSquare(center: CGPoint, side: CGFloat, cornerRatio: CGFloat, degrees: CGFloat = 0) -> CGPath {
-    let rect = CGRect(x: -side / 2, y: -side / 2, width: side, height: side)
-    let shape = RoundedRectangle(cornerRadius: side * cornerRatio, style: .continuous).path(in: rect).cgPath
-    var transform = CGAffineTransform(translationX: center.x, y: center.y).rotated(by: degrees * .pi / 180)
-    return shape.copy(using: &transform)!
+/// A smooth curve through the turning points, level at each one, so it never overshoots them.
+func waveform(_ points: [CGPoint]) -> CGPath {
+    let path = CGMutablePath()
+    path.move(to: points[0])
+    for (start, end) in zip(points, points.dropFirst()) {
+        let reach = (end.x - start.x) * traceHandleRatio
+        path.addCurve(to: end, control1: CGPoint(x: start.x + reach, y: start.y), control2: CGPoint(x: end.x - reach, y: end.y))
+    }
+    return path
 }
 
 /// A white shape on the square canvas; icon.json supplies the colour.
@@ -194,15 +191,16 @@ func svg(_ path: CGPath) -> String {
     """
 }
 
-let front = tiles[2]
+let end = tracePoints[tracePoints.count - 1]
+let trace = waveform(tracePoints)
+    .copy(strokingWithWidth: traceWidth, lineCap: .round, lineJoin: .round, miterLimit: 4)
+    .union(CGPath(ellipseIn: CGRect(x: end.x - dotRadius, y: end.y - dotRadius, width: dotRadius * 2, height: dotRadius * 2), transform: nil))
+
 let grid = CGMutablePath()
-let cell = front.side * cellRatio
-let pitch = cell * (1 + cellGapRatio)
-for row in 0..<2 {
-    for column in 0..<2 {
-        let center = CGPoint(x: front.center.x + (CGFloat(column) - 0.5) * pitch, y: front.center.y + (CGFloat(row) - 0.5) * pitch)
-        grid.addPath(roundedSquare(center: center, side: cell, cornerRatio: cellCornerRatio))
-    }
+for line in 1..<gridDivisions {
+    let offset = 1024 * CGFloat(line) / CGFloat(gridDivisions) - gridLineWidth / 2
+    grid.addRect(CGRect(x: offset, y: 0, width: gridLineWidth, height: 1024))
+    grid.addRect(CGRect(x: 0, y: offset, width: 1024, height: gridLineWidth))
 }
 
 func run(_ executable: String, _ arguments: [String], quiet: Bool = false) throws {
@@ -227,10 +225,7 @@ let assets = bundle.appendingPathComponent("Assets", isDirectory: true)
 
 try? fileManager.removeItem(at: bundle)
 try fileManager.createDirectory(at: assets, withIntermediateDirectories: true)
-var layers = ["front-grid": svg(grid)]
-for tile in tiles {
-    layers["\(tile.name)-tile"] = svg(roundedSquare(center: tile.center, side: tile.side, cornerRatio: tileCornerRatio, degrees: tile.degrees))
-}
+let layers = ["trace": svg(trace), "grid": svg(grid)]
 for (name, contents) in layers {
     try contents.write(to: assets.appendingPathComponent("\(name).svg"), atomically: true, encoding: .utf8)
 }

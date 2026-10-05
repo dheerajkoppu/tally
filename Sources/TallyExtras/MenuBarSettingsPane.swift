@@ -228,7 +228,7 @@ struct MenuBarPreview: View {
 
     private var item: some View {
         HStack(spacing: 6) {
-            TallyStackShape()
+            TallyPulseShape()
                 .fill(Palette.ink)
                 .frame(width: 14, height: 14)
                 .padding(.horizontal, 1)
