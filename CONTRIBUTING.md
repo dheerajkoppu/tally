@@ -31,7 +31,7 @@ These are the things reviewers will check first.
 2. **Feel like a Mac app.** Follow Apple's [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines). Use standard controls, support the keyboard and VoiceOver, respect Reduce Motion, and check your change in both light and dark mode. Colours come from `Palette` in `Sources/TallyCore/Design/`, never hard-coded.
 3. **Ask before acting.** Every quit, force quit or stop asks for confirmation first (`QuitRequest` with `.quitConfirmation`).
 4. **Never block the main thread** with sampling, subprocesses, file access or SQLite.
-5. **Stay offline.** Apart from the update check someone starts with Check for Updates, Tally makes no network connections and has no analytics. Pull requests that add background connections or analytics won't be merged. If you think something needs the network (an update check, for example), open an issue to discuss it first.
+5. **Stay offline.** Apart from the update check and download someone starts with Check for Updates, Tally makes no network connections and has no analytics. Pull requests that add background connections or analytics won't be merged. If you think something needs the network (an update check, for example), open an issue to discuss it first.
 6. **Real data only.** Figures come from the Mac Tally is running on. Nothing is simulated.
 
 ## Code style
@@ -54,6 +54,7 @@ swift run probe-processes   # every process, grouped into apps
 swift run probe-sensors     # temperatures, fans, peripheral batteries
 swift run probe-history     # the history database
 swift run probe-projects    # dev servers and ports by project
+swift run probe-update      # updates a spare copy of Tally.app from a release
 ```
 
 **The render harness** starts the real engine, waits, and writes PNGs of any screen in light and dark mode, without opening a window:

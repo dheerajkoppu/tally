@@ -14,7 +14,7 @@ Tally is a Swift package: a native SwiftUI and AppKit app for macOS 15 and later
 | `TallyProjects`   | `ProjectScanner` and `ProjectsView`: dev servers and open ports by project folder             |
 | `TallyDashboard`  | `OverviewView`, `MetricTabView`, `SensorsView` and `AppInspectorView`                         |
 | `TallyMenuBar`    | `StatusItemController` and `MenuBarPanelView`                                                 |
-| `TallyExtras`     | Settings, the welcome screen, image export and the logo mark                                  |
+| `TallyExtras`     | Settings, the welcome screen, image export, updates and the logo mark                         |
 | `TallyFanControl` | The fan card on the Sensors tab and the code that installs and talks to the fan helper        |
 | `TallyFanHelper`  | The root fan helper: a small daemon with no SwiftUI or AppKit, copied into the app bundle     |
 | `Tally`           | The app shell: `AppDelegate`, `WindowManager`, `MainView`, `MainMenu` and the render harness  |

@@ -50,6 +50,7 @@ let package = Package(
         .executableTarget(name: "probe-sensors", dependencies: ["TallyCore", "TallySensors"], path: "Probes/probe-sensors"),
         .executableTarget(name: "probe-history", dependencies: ["TallyCore", "TallyHistory"], path: "Probes/probe-history"),
         .executableTarget(name: "probe-projects", dependencies: ["TallyCore", "TallyProjects"], path: "Probes/probe-projects"),
+        .executableTarget(name: "probe-update", dependencies: ["TallyExtras"], path: "Probes/probe-update"),
     ],
     swiftLanguageModes: [.v5]
 )
