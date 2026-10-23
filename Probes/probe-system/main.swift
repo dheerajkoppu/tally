@@ -109,6 +109,7 @@ for round in 1...rounds {
         print("Battery — \(Format.percent(battery.percent).text), \(state)")
         line("Time remaining", battery.timeRemainingMinutes.map { Format.duration(minutes: $0) } ?? "estimating / n/a")
         line("Power draw", Format.power(battery.powerDrawWatts).text)
+        line("Net power", Format.netPower(battery.netPowerWatts).text)
         line("Health", "\(Format.percent(battery.healthPercent).text) (\(battery.maxCapacitymAh) of \(battery.designCapacitymAh) mAh)")
         line("Cycles", "\(battery.cycleCount)")
         line("Temperature", String(format: "%.1f °C", battery.temperatureCelsius))

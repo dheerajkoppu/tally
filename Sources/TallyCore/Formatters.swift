@@ -89,6 +89,13 @@ public enum Format {
         return Figure(String(format: "%.1f", safe), "W")
     }
 
+    /// Power in or out of the battery: "+12.4 W", "−3.1 W", "−427 mW".
+    public static func netPower(_ watts: Double) -> Figure {
+        let magnitude = power(abs(watts))
+        guard magnitude.value != "0" else { return magnitude }
+        return Figure((watts < 0 ? "−" : "+") + magnitude.value, magnitude.unit)
+    }
+
     /// "3h 34m", "45m".
     public static func duration(minutes: Int) -> String {
         let hours = minutes / 60

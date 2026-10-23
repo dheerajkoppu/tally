@@ -42,7 +42,7 @@ enum MenuBarReadings {
                 return MenuBarReading(metric: metric, text: "–%", compactText: "–%", spokenText: "No battery")
             }
             let text = Format.percent(snapshot.battery.percent).text
-            let state = snapshot.battery.isCharging ? ", charging" : ""
+            let state = snapshot.battery.isCharging ? ", charging" : (snapshot.battery.isDrainingOnAdapter ? ", draining on adapter" : "")
             return MenuBarReading(metric: metric, text: text, compactText: text, spokenText: "Battery \(text)\(state)")
         }
     }

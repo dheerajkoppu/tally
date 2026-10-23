@@ -211,6 +211,10 @@ public struct BatteryStats: Hashable, Sendable {
     public var timeRemainingMinutes: Int?
     /// Watts drawn by the whole Mac (battery discharge rate, or adapter input when plugged in).
     public var powerDrawWatts: Double = 0
+    /// Watts going into the battery: positive while it charges, negative while it drains, even on the adapter.
+    public var netPowerWatts: Double = 0
+    /// Plugged in, but the adapter cannot keep up with the load, so the battery still loses charge.
+    public var isDrainingOnAdapter: Bool { isPluggedIn && netPowerWatts < -0.5 }
     /// 0...100, maximum capacity compared with design capacity.
     public var healthPercent: Double = 0
     public var cycleCount: Int = 0

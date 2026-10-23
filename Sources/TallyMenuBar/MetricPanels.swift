@@ -328,7 +328,7 @@ struct BatteryPanel: View {
                             .padding(.bottom, 4)
                     }
                     VStack(spacing: 0) {
-                        PanelDetailRow("Power Draw", value: Format.power(battery.powerDrawWatts).text)
+                        PanelDetailRow("Net Power", value: Format.netPower(battery.netPowerWatts).text)
                         if battery.isPluggedIn, let adapter = battery.adapterWatts, adapter > 0 {
                             PanelDetailRow("Power Adapter", value: "\(adapter) W")
                         }

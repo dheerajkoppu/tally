@@ -266,7 +266,7 @@ struct MetricTabContent {
             let powerList = MetricListModel(appMetric: .power, historyMetric: .power, title: "Power", historyTitle: "Most energy", historyValueTitle: "Average", format: .power, historyFormat: .power)
             list = powerList
             if !ready || battery.hasBattery {
-                caption = !ready ? "Battery" : (battery.isCharging ? "Charging" : (battery.isPluggedIn ? (battery.percent >= 99.5 ? "Fully charged" : "Plugged in") : "On battery"))
+                caption = !ready ? "Battery" : (battery.isCharging ? "Charging" : (battery.isPluggedIn ? (battery.isDrainingOnAdapter ? "Draining on adapter" : (battery.percent >= 99.5 ? "Fully charged" : "Plugged in")) : "On battery"))
                 figure = ready ? Format.percent(battery.percent) : Figure(dash, "%")
                 let remainingLabel = battery.isCharging ? "Until full" : (battery.isPluggedIn ? "Adapter" : "Remaining")
                 let remainingValue: String = {
@@ -284,7 +284,7 @@ struct MetricTabContent {
                 chart = MetricChartModel(name: "Battery charge", liveValues: live.battery, liveDates: live.dates, historyMetrics: [.battery], fixedMax: 100, autoFloor: 100, format: .percent)
                 let capacityHelp = battery.designCapacitymAh > 0 ? "\(Format.integer(Double(battery.maxCapacitymAh))) of \(Format.integer(Double(battery.designCapacitymAh))) mAh design capacity." : nil
                 tiles = [
-                    MetricTileModel(symbol: Symbols.power, label: "Power Draw", value: ready ? Format.power(battery.powerDrawWatts).text : dash, help: battery.isPluggedIn ? "Power the Mac draws from the adapter." : "Power the Mac draws from the battery."),
+                    MetricTileModel(symbol: Symbols.power, label: "Net Power", value: ready ? Format.netPower(battery.netPowerWatts).text : dash, help: "Power going into the battery. Negative while it drains, even on the adapter."),
                     MetricTileModel(symbol: TallyTab.battery.symbol, label: "Health", value: ready && battery.healthPercent > 0 ? Format.percent(battery.healthPercent).text : dash, detail: .meter(Self.rounded(battery.healthPercent / 100)), help: capacityHelp),
                     MetricTileModel(symbol: Symbols.temperature, label: "Temperature", value: ready && battery.temperatureCelsius > 0 ? Format.temperature(battery.temperatureCelsius, unit: temperatureUnit).text : dash, help: "Battery temperature."),
                 ]
