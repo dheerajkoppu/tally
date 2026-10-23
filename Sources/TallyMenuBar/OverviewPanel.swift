@@ -335,13 +335,14 @@ private struct PanelAlertRow: View {
 }
 
 enum BatteryText {
-    /// "3h 00m left", "1h 10m to full", "Plugged in".
+    /// "3h 00m left", "1h 10m to full", "Draining".
     static func remaining(_ battery: BatteryStats) -> String {
         if battery.isCharging {
             if let minutes = battery.timeRemainingMinutes, minutes > 0 { return "\(Format.duration(minutes: minutes)) to full" }
             return "Charging"
         }
         if battery.isPluggedIn {
+            if battery.isDrainingOnAdapter { return "Draining" }
             return battery.percent >= 99.5 ? "Charged" : "Not charging"
         }
         if let minutes = battery.timeRemainingMinutes, minutes > 0 { return "\(Format.duration(minutes: minutes)) left" }

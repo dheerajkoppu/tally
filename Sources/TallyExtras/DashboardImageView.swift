@@ -151,12 +151,12 @@ struct DashboardImageView: View {
 
     private func batteryTile(_ snapshot: SystemSnapshot) -> some View {
         let battery = snapshot.battery
-        let caption = battery.isCharging ? "charging" : (battery.isPluggedIn ? "on power adapter" : "on battery")
+        let caption = battery.isCharging ? "charging" : (battery.isPluggedIn ? (battery.isDrainingOnAdapter ? "draining on adapter" : "on power adapter") : "on battery")
         let timeLabel: String
         let timeValue: String
         if battery.isPluggedIn && !battery.isCharging {
             timeLabel = "Status"
-            timeValue = battery.percent >= 99 ? "Charged" : "Not Charging"
+            timeValue = battery.isDrainingOnAdapter ? "Draining" : (battery.percent >= 99 ? "Charged" : "Not Charging")
         } else {
             timeLabel = battery.isCharging ? "Until Full" : "Remaining"
             timeValue = battery.timeRemainingMinutes.map { Format.duration(minutes: $0) } ?? "Estimating"
@@ -167,7 +167,7 @@ struct DashboardImageView: View {
             caption: caption,
             stats: [
                 (timeLabel, timeValue, nil),
-                ("Power Draw", Format.power(battery.powerDrawWatts).text, nil),
+                ("Net Power", Format.netPower(battery.netPowerWatts).text, nil),
                 ("Health", Format.percent(battery.healthPercent).text, nil),
             ],
             recent: slots(.battery),

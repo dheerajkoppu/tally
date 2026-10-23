@@ -430,14 +430,14 @@ struct OverviewContent {
             caption = "charging"
             if let time { chips.append(OverviewChipContent(label: "Full in", value: time)) }
         } else if battery.isPluggedIn {
-            caption = "on power adapter"
+            caption = battery.isDrainingOnAdapter ? "draining on adapter" : "on power adapter"
             if let adapter = battery.adapterWatts, adapter > 0 { chips.append(OverviewChipContent(label: "Adapter", value: "\(adapter) W")) }
         } else {
             caption = hasSample ? "on battery" : "battery"
             if let time { chips.append(OverviewChipContent(label: "Remaining", value: time)) }
         }
         let stats = [
-            OverviewStatContent(label: "Power Draw", value: text(Format.power(battery.powerDrawWatts).text)),
+            OverviewStatContent(label: "Net Power", value: text(Format.netPower(battery.netPowerWatts).text)),
             OverviewStatContent(label: "Cycles", value: text(battery.cycleCount > 0 ? battery.cycleCount.formatted() : placeholder)),
             OverviewStatContent(label: "Health", value: text(battery.healthPercent > 0 ? Format.percent(battery.healthPercent).text : placeholder)),
         ]

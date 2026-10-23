@@ -62,8 +62,11 @@ final class BatteryReader {
 
         stats.isPluggedIn = RegistryValue.bool(properties.topLevel("ExternalConnected")) ?? powerSource?.isOnACPower ?? false
         stats.isCharging = powerSource?.isCharging ?? RegistryValue.bool(properties.topLevel("IsCharging")) ?? false
+        stats.netPowerWatts = batteryPower(properties: properties)
+        // macOS keeps saying charging while a weak adapter lets the battery drain.
+        if stats.isDrainingOnAdapter { stats.isCharging = false }
         stats.timeRemainingMinutes = timeRemaining(stats: stats, powerSource: powerSource, properties: properties)
-        stats.powerDrawWatts = powerDraw(isPluggedIn: stats.isPluggedIn, properties: properties)
+        stats.powerDrawWatts = powerDraw(isPluggedIn: stats.isPluggedIn, batteryWatts: stats.netPowerWatts, properties: properties)
 
         let now = MonotonicClock.now()
         let refreshInterval = isVisible ? Self.slowRefreshVisible : Self.slowRefreshHidden
@@ -129,7 +132,7 @@ final class BatteryReader {
         return nil
     }
 
-    private func powerDraw(isPluggedIn: Bool, properties: BatteryProperties) -> Double {
+    private func powerDraw(isPluggedIn: Bool, batteryWatts: Double, properties: BatteryProperties) -> Double {
         if isPluggedIn, let telemetry = properties.topLevel("PowerTelemetryData") as? [String: Any] {
             for key in ["SystemPowerIn", "SystemLoad"] {
                 if let milliwatts = RegistryValue.int(telemetry[key]), milliwatts > 0, milliwatts < 1_000_000 {
@@ -137,10 +140,15 @@ final class BatteryReader {
                 }
             }
         }
+        return abs(batteryWatts)
+    }
+
+    /// The battery's current is signed: negative while it drains, which can happen on an adapter too weak for the load.
+    private func batteryPower(properties: BatteryProperties) -> Double {
         guard let millivolts = properties.int("Voltage") ?? properties.int("AppleRawBatteryVoltage") else { return 0 }
         var milliamps = properties.int("InstantAmperage") ?? 0
         if milliamps == 0 { milliamps = properties.int("Amperage") ?? 0 }
-        return abs(Double(millivolts) * Double(milliamps)) / 1_000_000
+        return Double(millivolts) * Double(milliamps) / 1_000_000
     }
 }
 
